@@ -1,11 +1,11 @@
 import axios from "axios";
-import { replaceUrl } from "./utils";
+import { replaceUrl } from "./utils.js";
 import {
   urlExamTemplate,
   urlSolutionTemplate,
   lowerIdsLimit,
   upperIdsLimit,
-} from "./constants";
+} from "./constants.js";
 
 let validUrls = [];
 
@@ -17,25 +17,31 @@ export const findValidUrls = async (year, semester, row) => {
   ) {
     let url = replaceUrl(urlExamTemplate, year, semester, row, idResource);
 
-    const response = await axios.head(url);
-    if (response.status === 200) {
-      console.log(`Recurso encontrado: ${url}`);
-      validUrls.push({
-        examUrl: url,
-        solutionUrl: replaceUrl(
-          urlSolutionTemplate,
+    try {
+      const response = await axios.head(url);
+      if (response.status === 200) {
+        console.log(`Recurso encontrado: ${url}`);
+        validUrls.push({
+          examUrl: url,
+          solutionUrl: replaceUrl(
+            urlSolutionTemplate,
+            year,
+            semester,
+            row,
+            idResource
+          ),
           year,
           semester,
           row,
-          idResource
-        ),
-        year,
-        semester,
-        row,
-        idResource,
-      });
+          idResource,
+        });
+      }
+    } catch (error) {
+      // console.error(error);
+      // console.log(`Recurso no encontrado: ${url}`);
     }
   }
+  return validUrls;
 };
 
 export const getValidUrls = async () => {

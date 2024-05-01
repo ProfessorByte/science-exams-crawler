@@ -1,4 +1,4 @@
-const replaceUrl = (url, year, semester, row, idResource) =>
+export const replaceUrl = (url, year, semester, row, idResource) =>
   url
     .replace("{YEAR}", year)
     .replace("{SEMESTER}", semester)
