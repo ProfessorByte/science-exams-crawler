@@ -15,21 +15,28 @@ export const findValidUrls = async (year, semester, row) => {
     idResource <= upperIdsLimit;
     idResource++
   ) {
-    let url = replaceUrl(urlExamTemplate, year, semester, row, idResource);
+    const examUrl = replaceUrl(
+      urlExamTemplate,
+      year,
+      semester,
+      row,
+      idResource
+    );
+    const solutionUrl = replaceUrl(
+      urlSolutionTemplate,
+      year,
+      semester,
+      row,
+      idResource
+    );
 
     try {
-      const response = await axios.head(url);
-      if (response.status === 200) {
-        console.log(`Recurso encontrado: ${url}`);
+      const responseExam = await axios.head(examUrl);
+      if (responseExam.status === 200) {
+        console.log(`Recurso encontrado: ${examUrl}`);
         validUrls.push({
-          examUrl: url,
-          solutionUrl: replaceUrl(
-            urlSolutionTemplate,
-            year,
-            semester,
-            row,
-            idResource
-          ),
+          examUrl,
+          solutionUrl,
           year,
           semester,
           row,
@@ -37,8 +44,23 @@ export const findValidUrls = async (year, semester, row) => {
         });
       }
     } catch (error) {
-      // console.error(error);
-      // console.log(`Recurso no encontrado: ${url}`);
+      try {
+        const responseSolution = await axios.head(solutionUrl);
+        if (responseSolution.status === 200) {
+          console.log(`Recurso encontrado: ${solutionUrl}`);
+          validUrls.push({
+            examUrl,
+            solutionUrl,
+            year,
+            semester,
+            row,
+            idResource,
+          });
+        }
+      } catch (error) {
+        // console.error(error);
+        // console.log(`Recurso no encontrado: ${url}`);
+      }
     }
   }
   return validUrls;
@@ -55,7 +77,11 @@ export const getValidUrls = async () => {
     }
   }
 
-  await Promise.all(promises);
+  try {
+    await Promise.all(promises);
+  } catch (error) {
+    // console.error(error);
+  }
 
   return validUrls.sort((a, b) => {
     if (a.examUrl < b.examUrl) return -1;

@@ -200,6 +200,30 @@
     "idResource": 584
   },
   {
+    "examUrl": "http://sagaa.fcyt.umss.edu.bo/adm_academica/archivos/examenes/2015-2-584/1/6-2.pdf",
+    "solutionUrl": "http://sagaa.fcyt.umss.edu.bo/adm_academica/archivos/solucionario/2015-2-584/1/6-2/0.pdf",
+    "year": 2015,
+    "semester": 2,
+    "row": 2,
+    "idResource": 584
+  },
+  {
+    "examUrl": "http://sagaa.fcyt.umss.edu.bo/adm_academica/archivos/examenes/2016-1-586/1/6-1.pdf",
+    "solutionUrl": "http://sagaa.fcyt.umss.edu.bo/adm_academica/archivos/solucionario/2016-1-586/1/6-1/0.pdf",
+    "year": 2016,
+    "semester": 1,
+    "row": 1,
+    "idResource": 586
+  },
+  {
+    "examUrl": "http://sagaa.fcyt.umss.edu.bo/adm_academica/archivos/examenes/2016-1-586/1/6-2.pdf",
+    "solutionUrl": "http://sagaa.fcyt.umss.edu.bo/adm_academica/archivos/solucionario/2016-1-586/1/6-2/0.pdf",
+    "year": 2016,
+    "semester": 1,
+    "row": 2,
+    "idResource": 586
+  },
+  {
     "examUrl": "http://sagaa.fcyt.umss.edu.bo/adm_academica/archivos/examenes/2016-1-587/1/6-1.pdf",
     "solutionUrl": "http://sagaa.fcyt.umss.edu.bo/adm_academica/archivos/solucionario/2016-1-587/1/6-1/0.pdf",
     "year": 2016,
