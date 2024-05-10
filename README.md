@@ -57,6 +57,6 @@ In these URLs:
 
 If you prefer a user-friendly interface to search for exams directly from my Firebase database, check out my another project on GitHub: [examendeingresoinador](https://github.com/ProfessorByte/examendeingresoinador).
 
-**Live Deployment:** Accessible at <https://examendeingresoinador.com> (Not working yet).
+**Live Deployment:** Accessible at <https://examendeingresoinador.web.app>
 
 Happy crawling! 🕷️📚
