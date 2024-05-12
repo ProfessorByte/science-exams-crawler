@@ -6,7 +6,7 @@ validUrls.forEach(async (urlData) => {
   const { year, semester, row, idResource } = urlData;
   try {
     await setDoc(
-      doc(db, "dataUrls", `${semester}-${year}-id${idResource}-row${row}`),
+      doc(db, "dataUrls", `${year}-${semester}-id${idResource}-row${row}`),
       urlData
     );
   } catch (error) {
