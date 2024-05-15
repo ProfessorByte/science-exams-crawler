@@ -9,7 +9,7 @@ import {
 
 let validUrls = [];
 
-export const findValidUrls = async (year, semester, row) => {
+export const findValidUrls = async (year, semester, formVersion) => {
   for (
     let idResource = lowerIdsLimit;
     idResource <= upperIdsLimit;
@@ -19,14 +19,14 @@ export const findValidUrls = async (year, semester, row) => {
       urlExamTemplate,
       year,
       semester,
-      row,
+      formVersion,
       idResource
     );
     const solutionUrl = replaceUrl(
       urlSolutionTemplate,
       year,
       semester,
-      row,
+      formVersion,
       idResource
     );
 
@@ -39,7 +39,7 @@ export const findValidUrls = async (year, semester, row) => {
           solutionUrl,
           year,
           semester,
-          row,
+          formVersion,
           idResource,
         });
       }
@@ -53,7 +53,7 @@ export const findValidUrls = async (year, semester, row) => {
             solutionUrl,
             year,
             semester,
-            row,
+            formVersion,
             idResource,
           });
         }
@@ -71,8 +71,8 @@ export const getValidUrls = async () => {
 
   for (let year = 2010; year <= new Date().getFullYear(); year++) {
     for (let semester = 1; semester <= 2; semester++) {
-      for (let row = 1; row <= 2; row++) {
-        promises.push(findValidUrls(year, semester, row));
+      for (let formVersion = 1; formVersion <= 2; formVersion++) {
+        promises.push(findValidUrls(year, semester, formVersion));
       }
     }
   }

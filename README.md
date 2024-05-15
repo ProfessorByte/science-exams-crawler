@@ -42,16 +42,16 @@ This command uploads all the collected data from the JSON file to your Firebase 
 
 ## Exam URL Formats
 
-- Exam URL: `http://sagaa.fcyt.umss.edu.bo/adm_academica/archivos/examenes/{YEAR}-{SEMESTER}-{ID}/1/6-{ROW}.pdf`
+- Exam URL: `http://sagaa.fcyt.umss.edu.bo/adm_academica/archivos/examenes/{YEAR}-{SEMESTER}-{ID}/1/6-{FORM_VERSION}.pdf`
 
-- Solution URL: `http://sagaa.fcyt.umss.edu.bo/adm_academica/archivos/solucionario/{YEAR}-{SEMESTER}-{ID}/1/6-{ROW}/0.pdf`
+- Solution URL: `http://sagaa.fcyt.umss.edu.bo/adm_academica/archivos/solucionario/{YEAR}-{SEMESTER}-{ID}/1/6-{FORM_VERSION}/0.pdf`
 
 In these URLs:
 
 - `{YEAR}` represents the year of the exam.
 - `{SEMESTER}` represents the semester in which the exam was taken (1 for the first semester, 2 for the second).
 - `{ID}` is a numeric identifier for each exam.
-- `{ROW}` represents the row of the exam (1 or 2).
+- `{FORM_VERSION}` represents the formVersion of the exam (1 or 2).
 
 ## User Interface
 

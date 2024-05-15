@@ -1,8 +1,8 @@
-export const replaceUrl = (url, year, semester, row, idResource) =>
+export const replaceUrl = (url, year, semester, formVersion, idResource) =>
   url
     .replace("{YEAR}", year)
     .replace("{SEMESTER}", semester)
-    .replace("{ROW}", row)
+    .replace("{FORM_VERSION}", formVersion)
     .replace("{ID}", idResource);
 
 export const getCurrentTime = () => {

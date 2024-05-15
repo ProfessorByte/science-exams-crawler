@@ -3,10 +3,10 @@ import { db } from "./database.js";
 import validUrls from "./validUrls.json" assert { type: "json" };
 
 validUrls.forEach(async (urlData) => {
-  const { year, semester, row, idResource } = urlData;
+  const { year, semester, formVersion, idResource } = urlData;
   try {
     await setDoc(
-      doc(db, "dataUrls", `${year}-${semester}-id${idResource}-row${row}`),
+      doc(db, "dataUrls", `${year}-${semester}-${idResource}-${formVersion}`),
       urlData
     );
   } catch (error) {
