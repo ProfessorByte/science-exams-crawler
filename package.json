@@ -5,9 +5,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "test": "node test.js",
-    "migrate": "node --env-file .env migrate.js"
+    "start": "node app/main.js",
+    "test": "node app/test.js",
+    "migrate": "node --env-file .env app/migrate.js"
   },
   "keywords": [],
   "author": "Pabloux Darkmind",

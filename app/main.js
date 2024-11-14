@@ -1,5 +1,5 @@
-import { getValidUrls } from "./pseudocrawler.js";
-import { getCurrentTime } from "./utils.js";
+import { getValidUrls } from "../utils/pseudocrawler.js";
+import { getCurrentTime } from "../utils/functions.js";
 import fs from "node:fs";
 
 getValidUrls().then((validUrls) => {

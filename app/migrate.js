@@ -1,6 +1,6 @@
 import { doc, setDoc } from "firebase/firestore";
-import { db } from "./database.js";
-import validUrls from "./validUrls.json" with { type: "json" };
+import { db } from "../database/firebase.js";
+import validUrls from "../validUrls.json" with { type: "json" };
 
 validUrls.forEach(async (urlData) => {
   const { year, semester, formVersion, idResource } = urlData;

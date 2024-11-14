@@ -1,5 +1,5 @@
 import axios from "axios";
-import { replaceUrl } from "./utils.js";
+import { replaceUrl } from "./functions.js";
 import {
   urlExamTemplate,
   urlSolutionTemplate,
