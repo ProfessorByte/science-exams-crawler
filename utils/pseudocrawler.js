@@ -35,6 +35,7 @@ export const findValidUrls = async (year, semester, formVersion) => {
       if (responseExam.status === 200) {
         console.log(`Recurso encontrado: ${examUrl}`);
         validUrls.push({
+          slug: `${year}-${semester}-${idResource}-${formVersion}`,
           examUrl,
           solutionUrl,
           year,
@@ -49,6 +50,7 @@ export const findValidUrls = async (year, semester, formVersion) => {
         if (responseSolution.status === 200) {
           console.log(`Recurso encontrado: ${solutionUrl}`);
           validUrls.push({
+            slug: `${year}-${semester}-${idResource}-${formVersion}`,
             examUrl,
             solutionUrl,
             year,
