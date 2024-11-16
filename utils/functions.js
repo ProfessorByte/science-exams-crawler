@@ -15,3 +15,23 @@ export const getCurrentTime = () => {
   const currentTime = `Date: ${year}-${month}-${day} Time: ${hour}:${minutes}`;
   return currentTime;
 };
+
+export const setUpperIdsLimit = async (lowerIdsLimit) => {
+  try {
+    const validUrls = (
+      await import("../validUrls.json", { with: { type: "json" } })
+    ).default;
+
+    const upperIdsLimit =
+      validUrls.reduce(
+        (acc, urlData) => (urlData.idResource > acc ? urlData.idResource : acc),
+        lowerIdsLimit
+      ) + 45;
+    console.log("Setting upperIdsLimit to: ", upperIdsLimit);
+    return upperIdsLimit;
+  } catch (error) {
+    // console.error("Error setting upperIdsLimit: ", error);
+    console.log("Setting upperIdsLimit to default value: 700");
+    return 700;
+  }
+};
