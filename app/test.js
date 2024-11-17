@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert";
-import { findValidUrls } from "../utils/pseudocrawler.js";
+import { findValidUrls } from "../utils/crawler.js";
 
 test("Find the valid urls for the given year, semester and formVersion", async () => {
   const year = 2023;

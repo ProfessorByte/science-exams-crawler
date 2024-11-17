@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import { getValidUrls } from "../utils/pseudocrawler.js";
+import { getValidUrls } from "../utils/crawler.js";
 import { getCurrentTime } from "../utils/functions.js";
 
 async function loadValidUrls() {
