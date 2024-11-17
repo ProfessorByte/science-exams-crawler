@@ -7,3 +7,5 @@ export const urlSolutionTemplate =
 
 export const lowerIdsLimit = 500;
 export const upperIdsLimit = await setUpperIdsLimit(lowerIdsLimit);
+
+export const downloadMaxAttempts = 6;

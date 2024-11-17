@@ -2,10 +2,8 @@ import { createWriteStream, promises as fs } from "node:fs";
 import { pipeline } from "node:stream/promises";
 import path from "node:path";
 import { getCurrentTime } from "../utils/functions.js";
-
-const validUrls = (
-  await import("../validUrls.json", { with: { type: "json" } })
-).default;
+import { downloadMaxAttempts } from "../utils/constants.js";
+import validUrls from "../validUrls.json" with { type: "json" };
 
 const downloadFile = async (url, dest, attempt = 1) => {
   try {
@@ -17,7 +15,7 @@ const downloadFile = async (url, dest, attempt = 1) => {
     await pipeline(response.body, fileStream);
     console.log(`File downloaded successfully to ${dest}`);
   } catch (error) {
-    if (attempt < 6) {
+    if (attempt < downloadMaxAttempts) {
       console.log(`Retrying download for ${url} (Attempt ${attempt + 1})`);
       await downloadFile(url, dest, attempt + 1);
     } else {
