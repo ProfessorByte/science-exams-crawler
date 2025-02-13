@@ -961,5 +961,23 @@
     "semester": 2,
     "formVersion": 1,
     "idResource": 655
+  },
+  {
+    "slug": "2025-1-662-1",
+    "examUrl": "http://sagaa.fcyt.umss.edu.bo/adm_academica/archivos/examenes/2025-1-662/1/6-1.pdf",
+    "solutionUrl": "http://sagaa.fcyt.umss.edu.bo/adm_academica/archivos/solucionario/2025-1-662/1/6-1/0.pdf",
+    "year": 2025,
+    "semester": 1,
+    "formVersion": 1,
+    "idResource": 662
+  },
+  {
+    "slug": "2025-1-666-1",
+    "examUrl": "http://sagaa.fcyt.umss.edu.bo/adm_academica/archivos/examenes/2025-1-666/1/6-1.pdf",
+    "solutionUrl": "http://sagaa.fcyt.umss.edu.bo/adm_academica/archivos/solucionario/2025-1-666/1/6-1/0.pdf",
+    "year": 2025,
+    "semester": 1,
+    "formVersion": 1,
+    "idResource": 666
   }
 ]
