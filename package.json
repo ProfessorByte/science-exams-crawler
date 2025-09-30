@@ -7,8 +7,7 @@
   "scripts": {
     "main": "node app/main.js",
     "download": "node app/download.js",
-    "test": "node app/test.js",
-    "migrate": "node --env-file .env app/migrate.js"
+    "test": "node app/test.js"
   },
   "keywords": [],
   "author": "Pabloux Darkmind",
