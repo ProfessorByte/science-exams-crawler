@@ -1,19 +1,25 @@
 {
   "name": "science-exams-crawler",
-  "version": "1.0.0",
+  "version": "2.0.0",
+  "description": "Optimized crawler for science exam PDFs",
   "type": "module",
-  "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
-    "main": "node app/main.js",
-    "download": "node app/download.js",
-    "test": "node app/test.js"
+    "start": "node src/index.js",
+    "stats": "node scripts/stats.js",
+    "download": "node src/downloadIndex.js",
+    "verify": "node scripts/verifyDownloads.js"
   },
-  "keywords": [],
-  "author": "Pabloux Darkmind",
-  "license": "ISC",
+  "keywords": [
+    "crawler",
+    "scraping",
+    "pdf",
+    "exams"
+  ],
+  "author": "Pablo Jesus Pardo Alcocer",
+  "license": "BSL-1.1",
+  "packageManager": "pnpm@10.15.1",
   "dependencies": {
-    "axios": "^1.6.8",
-    "firebase": "^10.11.1"
+    "axios": "^1.7.7"
   }
 }
