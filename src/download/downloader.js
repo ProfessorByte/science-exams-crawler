@@ -21,21 +21,20 @@ export class Downloader {
         return;
       }
 
-      // Filter out resources with 404 or 410 status codes
+      // Filter out resources where BOTH exam AND solution have 404/410 status codes
       const downloadableUrls = validUrls.filter((resource) => {
         const examStatus = resource.examStatusCode;
         const solutionStatus = resource.solutionStatusCode;
 
-        // Skip if either URL has 404 or 410 status code
-        const shouldSkip =
-          examStatus === 404 ||
-          examStatus === 410 ||
-          solutionStatus === 404 ||
-          solutionStatus === 410;
+        // Skip only if BOTH files have 404 or 410 status codes
+        const examUnavailable = examStatus === 404 || examStatus === 410;
+        const solutionUnavailable =
+          solutionStatus === 404 || solutionStatus === 410;
+        const shouldSkip = examUnavailable && solutionUnavailable;
 
         if (shouldSkip) {
           DownloadLogger.logInfo(
-            `Skipping ${resource.slug} due to status codes: exam=${examStatus}, solution=${solutionStatus}`
+            `Skipping ${resource.slug} - both files unavailable: exam=${examStatus}, solution=${solutionStatus}`
           );
         }
 
@@ -45,7 +44,7 @@ export class Downloader {
       const skippedCount = validUrls.length - downloadableUrls.length;
       if (skippedCount > 0) {
         DownloadLogger.logInfo(
-          `Filtered out ${skippedCount} resources with 404/410 status codes`
+          `Filtered out ${skippedCount} resources where both files are unavailable (404/410)`
         );
       }
 

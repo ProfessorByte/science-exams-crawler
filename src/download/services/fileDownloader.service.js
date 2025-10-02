@@ -57,6 +57,7 @@ export class FileDownloaderService {
 
   /**
    * Download both exam and solution for a resource
+   * Checks status codes before attempting downloads
    */
   static async downloadResource(resource, examPath, solutionPath) {
     const results = {
@@ -64,22 +65,44 @@ export class FileDownloaderService {
       solutionSuccess: false,
       examError: null,
       solutionError: null,
+      examSkipped: false,
+      solutionSkipped: false,
     };
 
+    // Check if exam should be downloaded
+    const examStatus = resource.examStatusCode;
+    const shouldSkipExam = examStatus === 404 || examStatus === 410;
+
+    // Check if solution should be downloaded
+    const solutionStatus = resource.solutionStatusCode;
+    const shouldSkipSolution = solutionStatus === 404 || solutionStatus === 410;
+
     // Download exam
-    try {
-      await this.downloadFile(resource.examUrl, examPath);
-      results.examSuccess = true;
-    } catch (error) {
-      results.examError = error;
+    if (shouldSkipExam) {
+      results.examSkipped = true;
+      results.examError = new Error(`Skipped - status code ${examStatus}`);
+    } else {
+      try {
+        await this.downloadFile(resource.examUrl, examPath);
+        results.examSuccess = true;
+      } catch (error) {
+        results.examError = error;
+      }
     }
 
     // Download solution
-    try {
-      await this.downloadFile(resource.solutionUrl, solutionPath);
-      results.solutionSuccess = true;
-    } catch (error) {
-      results.solutionError = error;
+    if (shouldSkipSolution) {
+      results.solutionSkipped = true;
+      results.solutionError = new Error(
+        `Skipped - status code ${solutionStatus}`
+      );
+    } else {
+      try {
+        await this.downloadFile(resource.solutionUrl, solutionPath);
+        results.solutionSuccess = true;
+      } catch (error) {
+        results.solutionError = error;
+      }
     }
 
     return results;

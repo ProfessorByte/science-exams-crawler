@@ -98,24 +98,36 @@ export class DownloadBatchProcessor {
       solutionPath
     );
 
-    // Update statistics
+    // Update statistics for exam
     if (results.examSuccess) {
       DownloadLogger.logSuccess(slug, "exam", examPath);
       this.stats.totalFiles++;
+    } else if (results.examSkipped) {
+      DownloadLogger.logInfo(
+        `Skipped ${slug} exam - ${results.examError.message}`
+      );
     } else {
       DownloadLogger.logError(slug, "exam", results.examError);
       this.stats.failed++;
     }
 
+    // Update statistics for solution
     if (results.solutionSuccess) {
       DownloadLogger.logSuccess(slug, "solution", solutionPath);
       this.stats.totalFiles++;
+    } else if (results.solutionSkipped) {
+      DownloadLogger.logInfo(
+        `Skipped ${slug} solution - ${results.solutionError.message}`
+      );
     } else {
       DownloadLogger.logError(slug, "solution", results.solutionError);
       this.stats.failed++;
     }
 
     if (results.examSuccess && results.solutionSuccess) {
+      this.stats.successful++;
+    } else if (results.examSuccess || results.solutionSuccess) {
+      // Partial success - at least one file was downloaded
       this.stats.successful++;
     }
   }

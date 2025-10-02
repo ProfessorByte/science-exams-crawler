@@ -26,7 +26,8 @@ Complete solution for discovering and downloading science exam PDFs from the UMS
 ### Downloader
 
 - **Batch Downloads**: Downloads 5 PDFs concurrently (configurable)
-- **Smart Skip**: Automatically skips already downloaded files and 404/410 errors
+- **Smart Skip**: Automatically skips already downloaded files
+- **Granular Status Filtering**: Skips individual files with 404/410 status codes (downloads available counterpart)
 - **Retry Logic**: Retries failed downloads with exponential backoff
 - **File Validation**: Verifies downloaded files are valid
 - **Organized Structure**: Creates folders per exam with clear naming
