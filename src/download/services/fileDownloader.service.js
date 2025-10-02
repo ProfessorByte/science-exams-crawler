@@ -57,9 +57,15 @@ export class FileDownloaderService {
 
   /**
    * Download both exam and solution for a resource
-   * Checks status codes before attempting downloads
+   * Checks status codes and already downloaded files before attempting downloads
    */
-  static async downloadResource(resource, examPath, solutionPath) {
+  static async downloadResource(
+    resource,
+    examPath,
+    solutionPath,
+    examAlreadyDownloaded = false,
+    solutionAlreadyDownloaded = false
+  ) {
     const results = {
       examSuccess: false,
       solutionSuccess: false,
@@ -71,14 +77,19 @@ export class FileDownloaderService {
 
     // Check if exam should be downloaded
     const examStatus = resource.examStatusCode;
-    const shouldSkipExam = examStatus === 404 || examStatus === 410;
+    const shouldSkipExamDueToStatus = examStatus === 404 || examStatus === 410;
 
     // Check if solution should be downloaded
     const solutionStatus = resource.solutionStatusCode;
-    const shouldSkipSolution = solutionStatus === 404 || solutionStatus === 410;
+    const shouldSkipSolutionDueToStatus =
+      solutionStatus === 404 || solutionStatus === 410;
 
     // Download exam
-    if (shouldSkipExam) {
+    if (examAlreadyDownloaded) {
+      results.examSkipped = true;
+      results.examSuccess = true; // Already downloaded counts as success
+      results.examError = new Error("Already downloaded");
+    } else if (shouldSkipExamDueToStatus) {
       results.examSkipped = true;
       results.examError = new Error(`Skipped - status code ${examStatus}`);
     } else {
@@ -91,7 +102,11 @@ export class FileDownloaderService {
     }
 
     // Download solution
-    if (shouldSkipSolution) {
+    if (solutionAlreadyDownloaded) {
+      results.solutionSkipped = true;
+      results.solutionSuccess = true; // Already downloaded counts as success
+      results.solutionError = new Error("Already downloaded");
+    } else if (shouldSkipSolutionDueToStatus) {
       results.solutionSkipped = true;
       results.solutionError = new Error(
         `Skipped - status code ${solutionStatus}`

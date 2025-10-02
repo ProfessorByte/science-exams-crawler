@@ -49,6 +49,19 @@ export class FileSystemService {
   }
 
   /**
+   * Check if a specific file is already downloaded and valid
+   */
+  static async isFileDownloaded(filePath, minSize) {
+    const exists = await this.fileExists(filePath);
+    if (!exists) {
+      return false;
+    }
+
+    const fileSize = await this.getFileSize(filePath);
+    return fileSize >= minSize;
+  }
+
+  /**
    * Check if resource is completely downloaded (both files exist and valid)
    */
   static async isResourceComplete(slug, examPath, solutionPath, minSize) {
