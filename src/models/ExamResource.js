@@ -31,7 +31,7 @@ export class ExamResource {
   }
 
   toJSON() {
-    return {
+    const baseData = {
       slug: this.slug,
       examUrl: this.examUrl,
       solutionUrl: this.solutionUrl,
@@ -42,5 +42,15 @@ export class ExamResource {
       pathway: this.pathway,
       formVersion: this.formVersion,
     };
+
+    // Include status codes if they exist
+    if (this.examStatusCode !== undefined) {
+      baseData.examStatusCode = this.examStatusCode;
+    }
+    if (this.solutionStatusCode !== undefined) {
+      baseData.solutionStatusCode = this.solutionStatusCode;
+    }
+
+    return baseData;
   }
 }

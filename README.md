@@ -14,10 +14,19 @@ Complete solution for discovering and downloading science exam PDFs from the UMS
 - **Optimized Validation**: If one URL (exam or solution) is valid, saves both without double-checking
 - **Resumable**: Safe to stop and restart
 
+### Validator
+
+- **HTTP Status Checks**: Validates all URLs and records HTTP status codes
+- **Batch Processing**: Processes validation requests in configurable batches
+- **Status Code Tracking**: Stores exam and solution status codes separately
+- **Smart Updates**: Only validates resources missing status codes
+- **Progress Tracking**: Real-time validation progress
+- **Resumable**: Safe to stop and restart
+
 ### Downloader
 
 - **Batch Downloads**: Downloads 5 PDFs concurrently (configurable)
-- **Smart Skip**: Automatically skips already downloaded files
+- **Smart Skip**: Automatically skips already downloaded files and 404/410 errors
 - **Retry Logic**: Retries failed downloads with exponential backoff
 - **File Validation**: Verifies downloaded files are valid
 - **Organized Structure**: Creates folders per exam with clear naming
@@ -35,21 +44,24 @@ Complete solution for discovering and downloading science exam PDFs from the UMS
 ```
 src/
 ├── config/
-│   └── constants.js          # Centralized configuration
+│   └── constants.js               # Centralized configuration
 ├── models/
-│   └── ExamResource.js        # Data model
+│   └── ExamResource.js            # Data model
 ├── services/
 │   ├── urlGenerator.service.js    # URL generation
 │   ├── urlValidator.service.js    # HTTP validation
+│   ├── urlStatusValidator.service.js  # Status code validation
 │   └── storage.service.js         # JSON persistence
 ├── utils/
-│   ├── logger.util.js         # Logging utilities
-│   ├── progress.util.js       # Progress tracking
-│   └── retry.util.js          # Retry logic
+│   ├── logger.util.js             # Logging utilities
+│   ├── progress.util.js           # Progress tracking
+│   └── retry.util.js              # Retry logic
 ├── core/
-│   ├── crawler.js             # Main orchestrator
-│   └── batch.processor.js     # Batch processing
-└── index.js                   # Entry point
+│   ├── crawler.js                 # Main orchestrator
+│   ├── validator.js               # Status code validator
+│   └── batch.processor.js         # Batch processing
+├── index.js                       # Crawler entry point
+└── validateIndex.js               # Validator entry point
 ```
 
 ## 🚀 Installation
@@ -65,19 +77,23 @@ pnpm install
 # Start the crawler to find valid URLs
 pnpm start
 
-# Download all found PDFs
-pnpm download
+# Validate URLs and get HTTP status codes
+pnpm validate
 
 # View statistics of collected data
-pnpm stats
+pnpm status
+
+# Download all found PDFs
+pnpm download
 ```
 
 ## 📊 Quick Start
 
 1. **Find valid URLs**: `pnpm start` - The crawler will scan and save valid exam URLs
-2. **Download PDFs**: `pnpm download` - Downloads all exams and solutions to `downloads/` folder
-3. **View statistics**: `pnpm stats` - See what you've collected
-4. **Resume anytime**: Both crawler and downloader are resumable - safe to stop and restart
+2. **Validate URLs**: `pnpm validate` - Check HTTP status codes for all URLs
+3. **View statistics**: `pnpm status` - See what you've collected and status code distribution
+4. **Download PDFs**: `pnpm download` - Downloads all exams and solutions to `downloads/` folder (skips 404/410 errors)
+5. **Resume anytime**: All commands are resumable - safe to stop and restart
 
 ## ⚙️ Configuration
 

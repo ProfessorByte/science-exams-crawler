@@ -6,6 +6,7 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
+    "validate": "node src/validateIndex.js",
     "stats": "node scripts/stats.js",
     "download": "node src/downloadIndex.js",
     "verify": "node scripts/verifyDownloads.js"

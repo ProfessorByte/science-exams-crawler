@@ -73,6 +73,68 @@ async function showStats() {
         console.log(`  Pathway ${pathway}: ${count}`);
       });
 
+    // HTTP Status Codes Statistics
+    const examStatusCodes = validUrls.reduce((acc, url) => {
+      const code = url.examStatusCode || "unknown";
+      acc[code] = (acc[code] || 0) + 1;
+      return acc;
+    }, {});
+
+    const solutionStatusCodes = validUrls.reduce((acc, url) => {
+      const code = url.solutionStatusCode || "unknown";
+      acc[code] = (acc[code] || 0) + 1;
+      return acc;
+    }, {});
+
+    console.log("\nExam HTTP Status Codes:");
+    Object.entries(examStatusCodes)
+      .sort(([a], [b]) => {
+        // Sort: numbers first (ascending), then "unknown"
+        if (a === "unknown") return 1;
+        if (b === "unknown") return -1;
+        return Number(a) - Number(b);
+      })
+      .forEach(([code, count]) => {
+        const percentage = ((count / validUrls.length) * 100).toFixed(1);
+        console.log(`  ${code}: ${count} (${percentage}%)`);
+      });
+
+    console.log("\nSolution HTTP Status Codes:");
+    Object.entries(solutionStatusCodes)
+      .sort(([a], [b]) => {
+        if (a === "unknown") return 1;
+        if (b === "unknown") return -1;
+        return Number(a) - Number(b);
+      })
+      .forEach(([code, count]) => {
+        const percentage = ((count / validUrls.length) * 100).toFixed(1);
+        console.log(`  ${code}: ${count} (${percentage}%)`);
+      });
+
+    // Resources with issues
+    const withIssues = validUrls.filter(
+      (url) =>
+        (url.examStatusCode && url.examStatusCode !== 200) ||
+        (url.solutionStatusCode && url.solutionStatusCode !== 200)
+    );
+
+    if (withIssues.length > 0) {
+      console.log(`\nResources with HTTP issues: ${withIssues.length}`);
+      console.log("  (Exam or solution returned status code other than 200)");
+
+      const notFound = withIssues.filter(
+        (url) =>
+          url.examStatusCode === 404 ||
+          url.solutionStatusCode === 404 ||
+          url.examStatusCode === 410 ||
+          url.solutionStatusCode === 410
+      );
+
+      if (notFound.length > 0) {
+        console.log(`  - Not found (404/410): ${notFound.length}`);
+      }
+    }
+
     console.log("\n" + "=".repeat(60) + "\n");
   } catch (error) {
     if (error.code === "ENOENT") {

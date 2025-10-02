@@ -21,14 +21,42 @@ export class Downloader {
         return;
       }
 
-      DownloadLogger.logStart(validUrls.length);
+      // Filter out resources with 404 or 410 status codes
+      const downloadableUrls = validUrls.filter((resource) => {
+        const examStatus = resource.examStatusCode;
+        const solutionStatus = resource.solutionStatusCode;
+
+        // Skip if either URL has 404 or 410 status code
+        const shouldSkip =
+          examStatus === 404 ||
+          examStatus === 410 ||
+          solutionStatus === 404 ||
+          solutionStatus === 410;
+
+        if (shouldSkip) {
+          DownloadLogger.logInfo(
+            `Skipping ${resource.slug} due to status codes: exam=${examStatus}, solution=${solutionStatus}`
+          );
+        }
+
+        return !shouldSkip;
+      });
+
+      const skippedCount = validUrls.length - downloadableUrls.length;
+      if (skippedCount > 0) {
+        DownloadLogger.logInfo(
+          `Filtered out ${skippedCount} resources with 404/410 status codes`
+        );
+      }
+
+      DownloadLogger.logStart(downloadableUrls.length);
 
       // Step 2: Ensure downloads directory exists
       await FileSystemService.ensureDownloadsDirectory();
 
       // Step 3: Process downloads in batches
       const batchProcessor = new DownloadBatchProcessor();
-      const stats = await batchProcessor.processResources(validUrls);
+      const stats = await batchProcessor.processResources(downloadableUrls);
 
       // Step 4: Log completion
       DownloadLogger.logEnd(stats);
