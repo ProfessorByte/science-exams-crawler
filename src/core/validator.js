@@ -1,8 +1,3 @@
-/**
- * Validator Core
- * Updates validUrls.json with HTTP status codes
- */
-
 import { StorageService } from "../services/storage.service.js";
 import { UrlStatusValidatorService } from "../services/urlStatusValidator.service.js";
 import { Logger } from "../utils/logger.util.js";
@@ -89,9 +84,6 @@ export class Validator {
     }
   }
 
-  /**
-   * Process a single batch of resources
-   */
   async processBatch(batch, updatedResources) {
     const results = await Promise.allSettled(
       batch.map((resource) =>
@@ -106,7 +98,6 @@ export class Validator {
       if (result.status === "fulfilled") {
         const { examStatusCode, solutionStatusCode } = result.value;
 
-        // Update the resource with status codes
         const updatedResource = {
           ...resource,
           examStatusCode,
@@ -125,9 +116,6 @@ export class Validator {
     });
   }
 
-  /**
-   * Split array into batches
-   */
   createBatches(array, batchSize) {
     const batches = [];
     for (let i = 0; i < array.length; i += batchSize) {

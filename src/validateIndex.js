@@ -1,8 +1,3 @@
-/**
- * Validation Entry Point
- * Initializes and starts the validator
- */
-
 import { Validator } from "./core/validator.js";
 import { Logger } from "./utils/logger.util.js";
 

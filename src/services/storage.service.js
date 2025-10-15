@@ -1,8 +1,3 @@
-/**
- * Storage Service
- * Handles persistence of valid URLs to JSON file
- */
-
 import fs from "fs/promises";
 import {
   UPPER_ID_RESOURCE_LIMIT,
@@ -11,9 +6,6 @@ import {
 import { Logger } from "../utils/logger.util.js";
 
 export class StorageService {
-  /**
-   * Load existing valid URLs from file
-   */
   static async loadValidUrls() {
     try {
       const data = await fs.readFile(VALID_URLS_FILE, "utf-8");
@@ -29,9 +21,6 @@ export class StorageService {
     }
   }
 
-  /**
-   * Save valid URLs to file with natural ordering by examUrl
-   */
   static async saveValidUrls(validUrls) {
     try {
       const sorted = this.sortByExamUrl(validUrls);
@@ -44,9 +33,6 @@ export class StorageService {
     }
   }
 
-  /**
-   * Natural sort by examUrl
-   */
   static sortByExamUrl(urls) {
     return urls.sort((a, b) => {
       return a.examUrl.localeCompare(b.examUrl, undefined, {
@@ -56,9 +42,6 @@ export class StorageService {
     });
   }
 
-  /**
-   * Get upper limit for idResource based on existing data
-   */
   static async getUpperIdResourceLimit(lowerLimit) {
     try {
       const validUrls = await this.loadValidUrls();
@@ -85,9 +68,6 @@ export class StorageService {
     }
   }
 
-  /**
-   * Create a Set of existing slugs for quick lookup
-   */
   static createSlugSet(validUrls) {
     return new Set(validUrls.map((url) => url.slug));
   }

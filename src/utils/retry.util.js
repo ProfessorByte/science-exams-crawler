@@ -1,8 +1,3 @@
-/**
- * Retry Utility
- * Implements retry logic with exponential backoff
- */
-
 export class RetryUtil {
   static async withRetry(fn, maxRetries, delayMs = 500) {
     let lastError;

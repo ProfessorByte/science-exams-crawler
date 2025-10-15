@@ -1,25 +1,14 @@
-/**
- * File System Service
- * Handles file system operations for downloads
- */
-
 import fs from "fs/promises";
 import path from "path";
 import { DOWNLOADS_DIR } from "../config/download.config.js";
 
 export class FileSystemService {
-  /**
-   * Create directory for a specific resource
-   */
   static async createResourceDirectory(slug) {
     const dirPath = path.join(DOWNLOADS_DIR, slug);
     await fs.mkdir(dirPath, { recursive: true });
     return dirPath;
   }
 
-  /**
-   * Check if a file exists
-   */
   static async fileExists(filePath) {
     try {
       await fs.access(filePath);
@@ -29,9 +18,6 @@ export class FileSystemService {
     }
   }
 
-  /**
-   * Get file size
-   */
   static async getFileSize(filePath) {
     try {
       const stats = await fs.stat(filePath);
@@ -41,16 +27,10 @@ export class FileSystemService {
     }
   }
 
-  /**
-   * Generate file path for exam or solution
-   */
   static generateFilePath(slug, filePrefix) {
     return path.join(DOWNLOADS_DIR, slug, `${filePrefix}_${slug}.pdf`);
   }
 
-  /**
-   * Check if a specific file is already downloaded and valid
-   */
   static async isFileDownloaded(filePath, minSize) {
     const exists = await this.fileExists(filePath);
     if (!exists) {
@@ -61,9 +41,6 @@ export class FileSystemService {
     return fileSize >= minSize;
   }
 
-  /**
-   * Check if resource is completely downloaded (both files exist and valid)
-   */
   static async isResourceComplete(slug, examPath, solutionPath, minSize) {
     const examExists = await this.fileExists(examPath);
     const solutionExists = await this.fileExists(solutionPath);
@@ -78,21 +55,15 @@ export class FileSystemService {
     return examSize >= minSize && solutionSize >= minSize;
   }
 
-  /**
-   * Create downloads directory if it doesn't exist
-   */
   static async ensureDownloadsDirectory() {
     await fs.mkdir(DOWNLOADS_DIR, { recursive: true });
   }
 
-  /**
-   * Delete file (used for cleanup of corrupted downloads)
-   */
   static async deleteFile(filePath) {
     try {
       await fs.unlink(filePath);
     } catch {
-      // Ignore errors if file doesn't exist
+      console.warn(`Warning: Could not delete file at ${filePath}`);
     }
   }
 }

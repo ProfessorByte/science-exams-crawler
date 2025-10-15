@@ -1,14 +1,7 @@
-/**
- * Configuration constants for the crawler
- * Centralized configuration following Single Responsibility Principle
- */
-
-// HTTP Configuration
 export const MAX_RETRIES = 3;
 export const BATCH_SIZE = 64;
 export const REQUEST_TIMEOUT = 0; // 0 = no timeout
 
-// URL Template
 export const BASE_URL = "http://sagaa.fcyt.umss.edu.bo/adm_academica/archivos";
 export const EXAM_PATH = "examenes";
 export const SOLUTION_PATH = "solucionario";

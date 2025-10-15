@@ -1,8 +1,3 @@
-/**
- * File Downloader Service
- * Handles downloading of PDF files with retry logic
- */
-
 import axios from "axios";
 import fs from "fs";
 import { pipeline } from "stream/promises";
@@ -16,9 +11,6 @@ import { RetryUtil } from "../../utils/retry.util.js";
 import { FileSystemService } from "./fileSystem.service.js";
 
 export class FileDownloaderService {
-  /**
-   * Download a single file with retry logic
-   */
   static async downloadFile(url, filePath) {
     return await RetryUtil.withRetry(
       async () => {
@@ -29,9 +21,6 @@ export class FileDownloaderService {
     );
   }
 
-  /**
-   * Download file once (no retry)
-   */
   static async downloadFileOnce(url, filePath) {
     const response = await axios({
       method: "GET",
@@ -40,25 +29,17 @@ export class FileDownloaderService {
       timeout: DOWNLOAD_TIMEOUT,
     });
 
-    // Create write stream
     const writer = fs.createWriteStream(filePath);
 
-    // Pipe the response to file
     await pipeline(response.data, writer);
 
-    // Verify file was downloaded and has content
     const fileSize = await FileSystemService.getFileSize(filePath);
     if (fileSize < MIN_FILE_SIZE) {
-      // Delete corrupted file
       await FileSystemService.deleteFile(filePath);
       throw new Error(`Downloaded file is too small (${fileSize} bytes)`);
     }
   }
 
-  /**
-   * Download both exam and solution for a resource
-   * Checks status codes and already downloaded files before attempting downloads
-   */
   static async downloadResource(
     resource,
     examPath,
@@ -75,19 +56,16 @@ export class FileDownloaderService {
       solutionSkipped: false,
     };
 
-    // Check if exam should be downloaded
     const examStatus = resource.examStatusCode;
     const shouldSkipExamDueToStatus = examStatus === 404 || examStatus === 410;
 
-    // Check if solution should be downloaded
     const solutionStatus = resource.solutionStatusCode;
     const shouldSkipSolutionDueToStatus =
       solutionStatus === 404 || solutionStatus === 410;
 
-    // Download exam
     if (examAlreadyDownloaded) {
       results.examSkipped = true;
-      results.examSuccess = true; // Already downloaded counts as success
+      results.examSuccess = true;
       results.examError = new Error("Already downloaded");
     } else if (shouldSkipExamDueToStatus) {
       results.examSkipped = true;
@@ -101,10 +79,9 @@ export class FileDownloaderService {
       }
     }
 
-    // Download solution
     if (solutionAlreadyDownloaded) {
       results.solutionSkipped = true;
-      results.solutionSuccess = true; // Already downloaded counts as success
+      results.solutionSuccess = true;
       results.solutionError = new Error("Already downloaded");
     } else if (shouldSkipSolutionDueToStatus) {
       results.solutionSkipped = true;

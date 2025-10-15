@@ -1,8 +1,3 @@
-/**
- * Progress Utility
- * Calculates and tracks progress of the crawling operation
- */
-
 export class ProgressTracker {
   constructor(totalCombinations) {
     this.total = totalCombinations;

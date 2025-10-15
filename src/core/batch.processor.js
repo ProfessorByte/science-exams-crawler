@@ -1,8 +1,3 @@
-/**
- * Batch Processor
- * Processes URL validations in batches to avoid network saturation
- */
-
 import { BATCH_SIZE } from "../config/constants.js";
 import { UrlValidatorService } from "../services/urlValidator.service.js";
 import { StorageService } from "../services/storage.service.js";
@@ -14,9 +9,6 @@ export class BatchProcessor {
     this.newValidResources = [];
   }
 
-  /**
-   * Process all combinations in batches
-   */
   async processCombinations(combinations, existingValidUrls) {
     const batches = this.createBatches(combinations, BATCH_SIZE);
     const allValidUrls = [...existingValidUrls];
@@ -29,16 +21,13 @@ export class BatchProcessor {
       const batch = batches[i];
       const validInBatch = await this.processBatch(batch);
 
-      // Add newly found valid resources
       if (validInBatch.length > 0) {
         this.newValidResources.push(...validInBatch);
         allValidUrls.push(...validInBatch.map((r) => r.toJSON()));
 
-        // Save after each successful batch to ensure data persistence
         await StorageService.saveValidUrls(allValidUrls);
       }
 
-      // Update progress for each resource in the batch
       for (let j = 0; j < batch.length; j++) {
         this.progressTracker.increment();
       }
@@ -55,18 +44,13 @@ export class BatchProcessor {
     return this.newValidResources;
   }
 
-  /**
-   * Process a single batch
-   */
   async processBatch(batch) {
     const validResources = [];
 
-    // Process all URLs in the batch concurrently
     const results = await Promise.allSettled(
       batch.map((resource) => UrlValidatorService.validateResource(resource))
     );
 
-    // Collect valid resources
     results.forEach((result, index) => {
       if (result.status === "fulfilled" && result.value === true) {
         const resource = batch[index];
@@ -78,9 +62,6 @@ export class BatchProcessor {
     return validResources;
   }
 
-  /**
-   * Split array into batches
-   */
   createBatches(array, batchSize) {
     const batches = [];
     for (let i = 0; i < array.length; i += batchSize) {
@@ -89,9 +70,6 @@ export class BatchProcessor {
     return batches;
   }
 
-  /**
-   * Get count of newly found resources
-   */
   getNewFoundCount() {
     return this.newValidResources.length;
   }

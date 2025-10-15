@@ -1,9 +1,3 @@
-/**
- * Statistics Script
- * Shows statistics about validUrls.json
- * Usage: node scripts/stats.js
- */
-
 import fs from "fs/promises";
 import path from "path";
 
@@ -24,7 +18,6 @@ async function showStats() {
       return;
     }
 
-    // Group by year
     const byYear = validUrls.reduce((acc, url) => {
       acc[url.year] = (acc[url.year] || 0) + 1;
       return acc;
@@ -37,7 +30,6 @@ async function showStats() {
         console.log(`  ${year}: ${count}`);
       });
 
-    // Group by semester
     const bySemester = validUrls.reduce((acc, url) => {
       acc[url.semester] = (acc[url.semester] || 0) + 1;
       return acc;
@@ -50,7 +42,6 @@ async function showStats() {
         console.log(`  Semester ${semester}: ${count}`);
       });
 
-    // ID Resource range
     const idResources = validUrls.map((url) => url.idResource);
     const minId = Math.min(...idResources);
     const maxId = Math.max(...idResources);
@@ -59,7 +50,6 @@ async function showStats() {
     console.log(`  Min: ${minId}`);
     console.log(`  Max: ${maxId}`);
 
-    // Most common pathways
     const byPathway = validUrls.reduce((acc, url) => {
       acc[url.pathway] = (acc[url.pathway] || 0) + 1;
       return acc;
@@ -73,7 +63,6 @@ async function showStats() {
         console.log(`  Pathway ${pathway}: ${count}`);
       });
 
-    // HTTP Status Codes Statistics
     const examStatusCodes = validUrls.reduce((acc, url) => {
       const code = url.examStatusCode || "unknown";
       acc[code] = (acc[code] || 0) + 1;
@@ -89,7 +78,6 @@ async function showStats() {
     console.log("\nExam HTTP Status Codes:");
     Object.entries(examStatusCodes)
       .sort(([a], [b]) => {
-        // Sort: numbers first (ascending), then "unknown"
         if (a === "unknown") return 1;
         if (b === "unknown") return -1;
         return Number(a) - Number(b);
@@ -111,7 +99,6 @@ async function showStats() {
         console.log(`  ${code}: ${count} (${percentage}%)`);
       });
 
-    // Resources with issues
     const withIssues = validUrls.filter(
       (url) =>
         (url.examStatusCode && url.examStatusCode !== 200) ||

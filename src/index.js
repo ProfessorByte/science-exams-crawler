@@ -1,8 +1,3 @@
-/**
- * Entry Point
- * Initializes and starts the crawler
- */
-
 import { Crawler } from "./core/crawler.js";
 import { Logger } from "./utils/logger.util.js";
 

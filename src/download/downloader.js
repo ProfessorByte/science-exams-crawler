@@ -1,8 +1,3 @@
-/**
- * Main Downloader
- * Orchestrates the download process
- */
-
 import { StorageService } from "../services/storage.service.js";
 import { FileSystemService } from "./services/fileSystem.service.js";
 import { DownloadBatchProcessor } from "./downloadBatch.processor.js";

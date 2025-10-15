@@ -1,8 +1,3 @@
-/**
- * Download Logger Utility
- * Provides logging specific to download operations
- */
-
 export class DownloadLogger {
   static formatDate(date = new Date()) {
     return date.toLocaleString("es-BO", {

@@ -1,8 +1,3 @@
-/**
- * URL Generator Service
- * Generates all possible URL combinations based on configuration
- */
-
 import {
   YEARS,
   SEMESTERS,
@@ -15,9 +10,6 @@ import { ExamResource } from "../models/ExamResource.js";
 import { Logger } from "../utils/logger.util.js";
 
 export class UrlGeneratorService {
-  /**
-   * Generate all possible combinations, excluding already processed ones
-   */
   static generateCombinations(upperIdResourceLimit, existingSlugs) {
     const combinations = [];
     let totalPossible = 0;
@@ -44,7 +36,6 @@ export class UrlGeneratorService {
                   formVersion,
                 });
 
-                // Skip if already processed
                 if (!existingSlugs.has(resource.slug)) {
                   combinations.push(resource);
                 } else {
@@ -64,9 +55,6 @@ export class UrlGeneratorService {
     return combinations;
   }
 
-  /**
-   * Calculate total possible combinations for progress tracking
-   */
   static calculateTotalCombinations(upperIdResourceLimit) {
     const idResourceCount = upperIdResourceLimit - LOWER_ID_RESOURCE_LIMIT + 1;
     return (

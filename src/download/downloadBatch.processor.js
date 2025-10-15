@@ -1,8 +1,3 @@
-/**
- * Download Batch Processor
- * Processes downloads in batches to avoid overwhelming the network
- */
-
 import {
   DOWNLOAD_BATCH_SIZE,
   EXAM_FILE_PREFIX,
@@ -25,9 +20,6 @@ export class DownloadBatchProcessor {
     this.processed = 0;
   }
 
-  /**
-   * Process all resources in batches
-   */
   async processResources(resources) {
     const batches = this.createBatches(resources, DOWNLOAD_BATCH_SIZE);
     const total = resources.length;
@@ -40,7 +32,6 @@ export class DownloadBatchProcessor {
       const batch = batches[i];
       await this.processBatch(batch);
 
-      // Update progress
       const percentage = (this.processed / total) * 100;
       if (this.processed % 5 === 0 || this.processed === total) {
         DownloadLogger.logProgress(this.processed, total, percentage);
@@ -50,17 +41,11 @@ export class DownloadBatchProcessor {
     return this.stats;
   }
 
-  /**
-   * Process a single batch
-   */
   async processBatch(batch) {
     const promises = batch.map((resource) => this.processResource(resource));
     await Promise.allSettled(promises);
   }
 
-  /**
-   * Process a single resource
-   */
   async processResource(resource) {
     this.processed++;
     this.stats.totalResources++;
@@ -131,9 +116,6 @@ export class DownloadBatchProcessor {
     }
   }
 
-  /**
-   * Split array into batches
-   */
   createBatches(array, batchSize) {
     const batches = [];
     for (let i = 0; i < array.length; i += batchSize) {

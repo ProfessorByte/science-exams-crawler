@@ -1,8 +1,3 @@
-/**
- * ExamResource Model
- * Represents a single exam resource with its URLs
- */
-
 export class ExamResource {
   constructor({ year, semester, idResource, mode, pathway, formVersion }) {
     this.year = year;
@@ -43,7 +38,6 @@ export class ExamResource {
       formVersion: this.formVersion,
     };
 
-    // Include status codes if they exist
     if (this.examStatusCode !== undefined) {
       baseData.examStatusCode = this.examStatusCode;
     }
