@@ -23,7 +23,7 @@ export class StorageService {
 
   static async saveValidUrls(validUrls) {
     try {
-      const sorted = this.sortByExamUrl(validUrls);
+      const sorted = this.sortBySlug(validUrls);
       const json = JSON.stringify(sorted, null, 2);
       await fs.writeFile(VALID_URLS_FILE, json, "utf-8");
       Logger.logInfo(`Saved ${sorted.length} valid URLs to file`);
@@ -33,9 +33,9 @@ export class StorageService {
     }
   }
 
-  static sortByExamUrl(urls) {
+  static sortBySlug(urls) {
     return urls.sort((a, b) => {
-      return a.examUrl.localeCompare(b.examUrl, undefined, {
+      return a.slug.localeCompare(b.slug, undefined, {
         numeric: true,
         sensitivity: "base",
       });
