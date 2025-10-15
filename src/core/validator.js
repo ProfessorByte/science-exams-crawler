@@ -25,22 +25,11 @@ export class Validator {
 
       Logger.logInfo(`Found ${validUrls.length} resources to validate`);
 
-      // Step 2: Filter resources that need validation
-      const resourcesToValidate = validUrls.filter(
-        (resource) =>
-          resource.examStatusCode === undefined ||
-          resource.solutionStatusCode === undefined
-      );
-
-      if (resourcesToValidate.length === 0) {
-        Logger.logInfo(
-          "All resources already have status codes. Nothing to validate!"
-        );
-        return;
-      }
+      // Step 2: Validate all resources (revalidate even if they have status codes)
+      const resourcesToValidate = validUrls;
 
       Logger.logInfo(
-        `${resourcesToValidate.length} resources need status code validation`
+        `Validating status codes for all ${resourcesToValidate.length} resources`
       );
 
       // Step 3: Process in batches
