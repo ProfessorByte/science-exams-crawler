@@ -4,15 +4,17 @@
 
 ### 1. Install Dependencies
 
-````bash
+```bash
 pnpm install
+```
+
 ## 📥 Download PDFs
 
 After finding valid URLs, download all PDFs:
 
 ```bash
 pnpm download
-````
+```
 
 **Note**: The downloader will automatically skip resources with HTTP 404 or 410 status codes if you ran `pnpm validate`.### 2. (Optional) Test with Small Range
 
