@@ -1,8 +1,3 @@
-/**
- * Download Logger Utility
- * Provides logging specific to download operations
- */
-
 export class DownloadLogger {
   static formatDate(date = new Date()) {
     return date.toLocaleString("es-BO", {
@@ -27,14 +22,22 @@ export class DownloadLogger {
 
   static logEnd(stats) {
     const timestamp = this.formatDate();
+    const totalFiles =
+      stats.newFiles +
+      stats.existingFiles +
+      stats.skippedFiles +
+      stats.failedFiles;
+
     console.log("\n" + "=".repeat(60));
     console.log("✅ DOWNLOAD COMPLETED");
     console.log(`⏰ End Time: ${timestamp}`);
     console.log(`📊 Statistics:`);
-    console.log(`   ✓ Successfully Downloaded: ${stats.successful}`);
-    console.log(`   ⏭️  Skipped (Already Exists): ${stats.skipped}`);
-    console.log(`   ❌ Failed: ${stats.failed}`);
-    console.log(`   📁 Total Files: ${stats.totalFiles}`);
+    console.log(`   📦 Resources Processed: ${stats.totalResources}`);
+    console.log(`   ⬇️  New Files Downloaded: ${stats.newFiles}`);
+    console.log(`   ✓ Files Already Existing: ${stats.existingFiles}`);
+    console.log(`   ⏭️  Files Skipped (404/410): ${stats.skippedFiles}`);
+    console.log(`   ❌ Files Failed: ${stats.failedFiles}`);
+    console.log(`   📁 Total Files Processed: ${totalFiles}`);
     console.log("=".repeat(60) + "\n");
   }
 

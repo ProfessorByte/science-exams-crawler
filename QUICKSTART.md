@@ -8,7 +8,15 @@
 pnpm install
 ```
 
-### 2. (Optional) Test with Small Range
+## 📥 Download PDFs
+
+After finding valid URLs, download all PDFs:
+
+```bash
+pnpm download
+```
+
+**Note**: The downloader will automatically skip resources with HTTP 404 or 410 status codes if you ran `pnpm validate`.### 2. (Optional) Test with Small Range
 
 Before running the full crawler (which can take hours), test with a small range:
 
@@ -56,6 +64,16 @@ This will test with ~48 combinations and complete in under 1 minute.
 # Make sure constants.js is back to defaults
 pnpm start
 ```
+
+### 4. Validate URLs (Optional but Recommended)
+
+After the crawler completes, validate all URLs to get their HTTP status codes:
+
+```bash
+pnpm validate
+```
+
+This will update `validUrls.json` with status codes for each exam and solution URL.
 
 ## 📊 Monitor Progress
 
@@ -179,7 +197,23 @@ Top 5 pathways:
   Pathway 1: 19
   Pathway 15: 17
   Pathway 3: 15
+
+Exam HTTP Status Codes:
+  200: 120 (94.5%)
+  404: 5 (3.9%)
+  unknown: 2 (1.6%)
+
+Solution HTTP Status Codes:
+  200: 115 (90.6%)
+  404: 10 (7.9%)
+  unknown: 2 (1.6%)
+
+Resources with HTTP issues: 12
+  (Exam or solution returned status code other than 200)
+  - Not found (404/410): 12
 ```
+
+**Note**: Status codes will appear after running `pnpm validate`.
 
 ## 🛠️ Troubleshooting
 
@@ -237,10 +271,14 @@ Format:
     "idResource": 558,
     "mode": 1,
     "pathway": 6,
-    "formVersion": 1
+    "formVersion": 1,
+    "examStatusCode": 200,
+    "solutionStatusCode": 200
   }
 ]
 ```
+
+**Note**: `examStatusCode` and `solutionStatusCode` fields are added after running `pnpm validate`.
 
 ## 🎯 What Happens Next?
 

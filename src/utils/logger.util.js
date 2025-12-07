@@ -1,8 +1,3 @@
-/**
- * Logger Utility
- * Provides consistent logging throughout the application
- */
-
 export class Logger {
   static formatDate(date = new Date()) {
     return date.toLocaleString("es-BO", {

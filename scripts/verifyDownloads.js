@@ -1,9 +1,3 @@
-/**
- * Download Verification Script
- * Verifies the integrity of downloaded files
- * Usage: node scripts/verifyDownloads.js
- */
-
 import fs from "fs/promises";
 import path from "path";
 
@@ -16,7 +10,6 @@ async function verifyDownloads() {
     console.log("🔍 DOWNLOAD VERIFICATION");
     console.log("=".repeat(60) + "\n");
 
-    // Load validUrls.json
     const validUrlsData = await fs.readFile("validUrls.json", "utf-8");
     const validUrls = JSON.parse(validUrlsData);
 
@@ -53,7 +46,6 @@ async function verifyDownloads() {
         results.incomplete++;
         issues.push({ slug, issue: "Solution file missing" });
       } else {
-        // Both exist, check sizes
         const examSize = await getFileSize(examPath);
         const solutionSize = await getFileSize(solutionPath);
 
@@ -69,7 +61,6 @@ async function verifyDownloads() {
       }
     }
 
-    // Print results
     console.log("📊 Results:");
     console.log(`   ✅ Complete: ${results.complete}`);
     console.log(`   ⚠️  Incomplete: ${results.incomplete}`);

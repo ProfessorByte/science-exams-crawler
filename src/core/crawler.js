@@ -1,8 +1,3 @@
-/**
- * Crawler Core
- * Main orchestrator for the crawling process
- */
-
 import { StorageService } from "../services/storage.service.js";
 import { UrlGeneratorService } from "../services/urlGenerator.service.js";
 import { BatchProcessor } from "./batch.processor.js";

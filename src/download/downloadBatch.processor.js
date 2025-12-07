@@ -1,8 +1,3 @@
-/**
- * Download Batch Processor
- * Processes downloads in batches to avoid overwhelming the network
- */
-
 import {
   DOWNLOAD_BATCH_SIZE,
   EXAM_FILE_PREFIX,
@@ -16,17 +11,15 @@ import { DownloadLogger } from "./utils/downloadLogger.util.js";
 export class DownloadBatchProcessor {
   constructor() {
     this.stats = {
-      successful: 0,
-      skipped: 0,
-      failed: 0,
-      totalFiles: 0,
+      totalResources: 0,
+      newFiles: 0,
+      existingFiles: 0,
+      skippedFiles: 0,
+      failedFiles: 0,
     };
     this.processed = 0;
   }
 
-  /**
-   * Process all resources in batches
-   */
   async processResources(resources) {
     const batches = this.createBatches(resources, DOWNLOAD_BATCH_SIZE);
     const total = resources.length;
@@ -39,7 +32,6 @@ export class DownloadBatchProcessor {
       const batch = batches[i];
       await this.processBatch(batch);
 
-      // Update progress
       const percentage = (this.processed / total) * 100;
       if (this.processed % 5 === 0 || this.processed === total) {
         DownloadLogger.logProgress(this.processed, total, percentage);
@@ -49,80 +41,81 @@ export class DownloadBatchProcessor {
     return this.stats;
   }
 
-  /**
-   * Process a single batch
-   */
   async processBatch(batch) {
     const promises = batch.map((resource) => this.processResource(resource));
     await Promise.allSettled(promises);
   }
 
-  /**
-   * Process a single resource
-   */
   async processResource(resource) {
     this.processed++;
+    this.stats.totalResources++;
 
     const { slug } = resource;
 
-    // Generate file paths
     const examPath = FileSystemService.generateFilePath(slug, EXAM_FILE_PREFIX);
     const solutionPath = FileSystemService.generateFilePath(
       slug,
       SOLUTION_FILE_PREFIX
     );
 
-    // Check if already downloaded
-    const isComplete = await FileSystemService.isResourceComplete(
-      slug,
+    const examAlreadyDownloaded = await FileSystemService.isFileDownloaded(
       examPath,
+      MIN_FILE_SIZE
+    );
+    const solutionAlreadyDownloaded = await FileSystemService.isFileDownloaded(
       solutionPath,
       MIN_FILE_SIZE
     );
 
-    if (isComplete) {
+    if (examAlreadyDownloaded && solutionAlreadyDownloaded) {
       DownloadLogger.logSkipped(slug);
-      this.stats.skipped++;
+      this.stats.existingFiles += 2;
       return;
     }
 
-    // Create directory
     await FileSystemService.createResourceDirectory(slug);
 
-    // Download both files
     DownloadLogger.logDownloading(slug, "exam & solution");
 
     const results = await FileDownloaderService.downloadResource(
       resource,
       examPath,
-      solutionPath
+      solutionPath,
+      examAlreadyDownloaded,
+      solutionAlreadyDownloaded
     );
 
-    // Update statistics
-    if (results.examSuccess) {
+    if (examAlreadyDownloaded) {
+      this.stats.existingFiles++;
+    } else if (results.examSuccess && !results.examSkipped) {
       DownloadLogger.logSuccess(slug, "exam", examPath);
-      this.stats.totalFiles++;
+      this.stats.newFiles++;
+    } else if (results.examSkipped) {
+      DownloadLogger.logInfo(
+        `Skipped ${slug} exam - ${results.examError.message}`
+      );
+      this.stats.skippedFiles++;
     } else {
       DownloadLogger.logError(slug, "exam", results.examError);
-      this.stats.failed++;
+      this.stats.failedFiles++;
     }
 
-    if (results.solutionSuccess) {
+    if (solutionAlreadyDownloaded) {
+      this.stats.existingFiles++;
+    } else if (results.solutionSuccess && !results.solutionSkipped) {
       DownloadLogger.logSuccess(slug, "solution", solutionPath);
-      this.stats.totalFiles++;
+      this.stats.newFiles++;
+    } else if (results.solutionSkipped) {
+      DownloadLogger.logInfo(
+        `Skipped ${slug} solution - ${results.solutionError.message}`
+      );
+      this.stats.skippedFiles++;
     } else {
       DownloadLogger.logError(slug, "solution", results.solutionError);
-      this.stats.failed++;
-    }
-
-    if (results.examSuccess && results.solutionSuccess) {
-      this.stats.successful++;
+      this.stats.failedFiles++;
     }
   }
 
-  /**
-   * Split array into batches
-   */
   createBatches(array, batchSize) {
     const batches = [];
     for (let i = 0; i < array.length; i += batchSize) {

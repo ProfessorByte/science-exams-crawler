@@ -1,9 +1,3 @@
-/**
- * Statistics Script
- * Shows statistics about validUrls.json
- * Usage: node scripts/stats.js
- */
-
 import fs from "fs/promises";
 import path from "path";
 
@@ -24,7 +18,6 @@ async function showStats() {
       return;
     }
 
-    // Group by year
     const byYear = validUrls.reduce((acc, url) => {
       acc[url.year] = (acc[url.year] || 0) + 1;
       return acc;
@@ -37,7 +30,6 @@ async function showStats() {
         console.log(`  ${year}: ${count}`);
       });
 
-    // Group by semester
     const bySemester = validUrls.reduce((acc, url) => {
       acc[url.semester] = (acc[url.semester] || 0) + 1;
       return acc;
@@ -50,7 +42,6 @@ async function showStats() {
         console.log(`  Semester ${semester}: ${count}`);
       });
 
-    // ID Resource range
     const idResources = validUrls.map((url) => url.idResource);
     const minId = Math.min(...idResources);
     const maxId = Math.max(...idResources);
@@ -59,7 +50,6 @@ async function showStats() {
     console.log(`  Min: ${minId}`);
     console.log(`  Max: ${maxId}`);
 
-    // Most common pathways
     const byPathway = validUrls.reduce((acc, url) => {
       acc[url.pathway] = (acc[url.pathway] || 0) + 1;
       return acc;
@@ -72,6 +62,65 @@ async function showStats() {
       .forEach(([pathway, count]) => {
         console.log(`  Pathway ${pathway}: ${count}`);
       });
+
+    const examStatusCodes = validUrls.reduce((acc, url) => {
+      const code = url.examStatusCode || "unknown";
+      acc[code] = (acc[code] || 0) + 1;
+      return acc;
+    }, {});
+
+    const solutionStatusCodes = validUrls.reduce((acc, url) => {
+      const code = url.solutionStatusCode || "unknown";
+      acc[code] = (acc[code] || 0) + 1;
+      return acc;
+    }, {});
+
+    console.log("\nExam HTTP Status Codes:");
+    Object.entries(examStatusCodes)
+      .sort(([a], [b]) => {
+        if (a === "unknown") return 1;
+        if (b === "unknown") return -1;
+        return Number(a) - Number(b);
+      })
+      .forEach(([code, count]) => {
+        const percentage = ((count / validUrls.length) * 100).toFixed(1);
+        console.log(`  ${code}: ${count} (${percentage}%)`);
+      });
+
+    console.log("\nSolution HTTP Status Codes:");
+    Object.entries(solutionStatusCodes)
+      .sort(([a], [b]) => {
+        if (a === "unknown") return 1;
+        if (b === "unknown") return -1;
+        return Number(a) - Number(b);
+      })
+      .forEach(([code, count]) => {
+        const percentage = ((count / validUrls.length) * 100).toFixed(1);
+        console.log(`  ${code}: ${count} (${percentage}%)`);
+      });
+
+    const withIssues = validUrls.filter(
+      (url) =>
+        (url.examStatusCode && url.examStatusCode !== 200) ||
+        (url.solutionStatusCode && url.solutionStatusCode !== 200)
+    );
+
+    if (withIssues.length > 0) {
+      console.log(`\nResources with HTTP issues: ${withIssues.length}`);
+      console.log("  (Exam or solution returned status code other than 200)");
+
+      const notFound = withIssues.filter(
+        (url) =>
+          url.examStatusCode === 404 ||
+          url.solutionStatusCode === 404 ||
+          url.examStatusCode === 410 ||
+          url.solutionStatusCode === 410
+      );
+
+      if (notFound.length > 0) {
+        console.log(`  - Not found (404/410): ${notFound.length}`);
+      }
+    }
 
     console.log("\n" + "=".repeat(60) + "\n");
   } catch (error) {

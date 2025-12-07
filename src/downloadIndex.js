@@ -1,8 +1,3 @@
-/**
- * Download Entry Point
- * Initializes and starts the downloader
- */
-
 import { Downloader } from "./download/downloader.js";
 import { DownloadLogger } from "./download/utils/downloadLogger.util.js";
 
