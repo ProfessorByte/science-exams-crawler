@@ -82,7 +82,7 @@ pnpm start
 pnpm validate
 
 # View statistics of collected data
-pnpm status
+pnpm stats
 
 # Download all found PDFs
 pnpm download
@@ -92,7 +92,7 @@ pnpm download
 
 1. **Find valid URLs**: `pnpm start` - The crawler will scan and save valid exam URLs
 2. **Validate URLs**: `pnpm validate` - Check HTTP status codes for all URLs
-3. **View statistics**: `pnpm status` - See what you've collected and status code distribution
+3. **View statistics**: `pnpm stats` - See what you've collected and status code distribution
 4. **Download PDFs**: `pnpm download` - Downloads all exams and solutions to `downloads/` folder (skips 404/410 errors)
 5. **Resume anytime**: All commands are resumable - safe to stop and restart
 

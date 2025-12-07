@@ -166,7 +166,7 @@ downloads/
 After the crawler has found some resources:
 
 ```bash
-pnpm status
+pnpm stats
 ```
 
 Output example:
@@ -304,7 +304,7 @@ The crawler automatically:
 
 1. **Run during off-peak hours** for better performance
 2. **Check validUrls.json periodically** to see progress
-3. **Use `pnpm status`** to analyze collected data
+3. **Use `pnpm stats`** to analyze collected data
 4. **Commit validUrls.json to git** to track changes over time
 5. **Schedule with cron** for automatic daily runs
 
