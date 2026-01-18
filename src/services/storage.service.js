@@ -2,6 +2,7 @@ import fs from "fs/promises";
 import {
   UPPER_ID_RESOURCE_LIMIT,
   VALID_URLS_FILE,
+  ID_RESOURCE_BUFFER,
 } from "../config/constants.js";
 import { Logger } from "../utils/logger.util.js";
 
@@ -49,17 +50,17 @@ export class StorageService {
       if (validUrls.length === 0) {
         Logger.logInfo(
           "No existing data. Using default upper limit:",
-          UPPER_ID_RESOURCE_LIMIT
+          UPPER_ID_RESOURCE_LIMIT,
         );
         return UPPER_ID_RESOURCE_LIMIT;
       }
 
       const maxId = validUrls.reduce(
         (acc, urlData) => (urlData.idResource > acc ? urlData.idResource : acc),
-        lowerLimit
+        lowerLimit,
       );
 
-      const upperLimit = maxId + 45;
+      const upperLimit = maxId + ID_RESOURCE_BUFFER;
       Logger.logInfo(`Setting upper ID resource limit to: ${upperLimit}`);
       return upperLimit;
     } catch (error) {
