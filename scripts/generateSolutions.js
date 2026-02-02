@@ -2,9 +2,16 @@ import fs from "fs/promises";
 import path from "path";
 import { GoogleGenAI } from "@google/genai";
 import { config } from "dotenv";
+import { marked } from "marked";
 
 // Load environment variables from .env file
 config();
+
+// Configure marked for GFM (GitHub Flavored Markdown) with tables support
+marked.setOptions({
+  gfm: true,
+  breaks: true,
+});
 
 // ============================================================================
 // Configuration Constants
@@ -217,7 +224,7 @@ class SolutionGenerator {
 
 /**
  * Converts Markdown content to PDF format.
- * Uses a simple HTML-based approach for PDF generation.
+ * Uses marked library for proper Markdown parsing including tables.
  */
 class MarkdownToPdfConverter {
   /**
@@ -227,27 +234,8 @@ class MarkdownToPdfConverter {
    * @returns {string} HTML document string.
    */
   convertToHtml(markdown, slug) {
-    // Basic markdown to HTML conversion
-    let html = markdown
-      // Headers
-      .replace(/^### (.*$)/gm, "<h3>$1</h3>")
-      .replace(/^## (.*$)/gm, "<h2>$1</h2>")
-      .replace(/^# (.*$)/gm, "<h1>$1</h1>")
-      // Bold
-      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-      // Italic
-      .replace(/\*(.*?)\*/g, "<em>$1</em>")
-      // Code blocks
-      .replace(/```([\s\S]*?)```/g, "<pre><code>$1</code></pre>")
-      // Inline code
-      .replace(/`(.*?)`/g, "<code>$1</code>")
-      // Line breaks
-      .replace(/\n\n/g, "</p><p>")
-      .replace(/\n/g, "<br>");
-
-    // Wrap in paragraphs
-    html = `<p>${html}</p>`;
-
+    // Use marked library for proper markdown parsing (tables, lists, etc.)
+    const html = marked.parse(markdown);
     return this.wrapInHtmlDocument(html, slug);
   }
 
@@ -264,18 +252,43 @@ class MarkdownToPdfConverter {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Solucionario - ${slug}</title>
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\\\(', '\\\\)']],
+        displayMath: [['$$', '$$'], ['\\\\[', '\\\\]']],
+        processEscapes: true,
+        processEnvironments: true
+      },
+      options: {
+        skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+      },
+      startup: {
+        pageReady: () => {
+          return MathJax.startup.defaultPageReady().then(() => {
+            window.mathJaxReady = true;
+          });
+        }
+      }
+    };
+  </script>
+  <script id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
   <style>
     @page {
       size: A4;
       margin: 2cm;
     }
+    * {
+      box-sizing: border-box;
+    }
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      line-height: 1.6;
+      line-height: 1.8;
       color: #333;
       max-width: 800px;
       margin: 0 auto;
       padding: 20px;
+      font-size: 14px;
     }
     .disclaimer {
       background-color: #fff3cd;
@@ -283,59 +296,128 @@ class MarkdownToPdfConverter {
       border-radius: 5px;
       padding: 15px;
       margin-bottom: 30px;
-      font-size: 0.9em;
+      font-size: 0.85em;
       color: #856404;
     }
     h1 {
       color: #2c3e50;
       border-bottom: 2px solid #3498db;
       padding-bottom: 10px;
+      font-size: 1.8em;
+      margin-top: 20px;
     }
     h2 {
       color: #34495e;
       margin-top: 30px;
       border-left: 4px solid #3498db;
       padding-left: 10px;
+      font-size: 1.4em;
     }
     h3 {
-      color: #7f8c8d;
+      color: #555;
+      font-size: 1.2em;
+      margin-top: 20px;
+    }
+    h4 {
+      color: #666;
+      font-size: 1.1em;
+    }
+    p {
+      margin: 10px 0;
+      text-align: justify;
     }
     strong {
       color: #27ae60;
+    }
+    em {
+      color: #555;
     }
     code {
       background-color: #f4f4f4;
       padding: 2px 6px;
       border-radius: 3px;
-      font-family: 'Consolas', monospace;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 0.9em;
     }
     pre {
       background-color: #f4f4f4;
       padding: 15px;
       border-radius: 5px;
       overflow-x: auto;
+      border: 1px solid #ddd;
     }
     pre code {
       background: none;
       padding: 0;
     }
-    .answer {
-      background-color: #d4edda;
-      border: 1px solid #28a745;
-      border-radius: 5px;
-      padding: 10px;
+    /* Table styles */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 15px 0;
+      font-size: 0.95em;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px 12px;
+      text-align: center;
+    }
+    th {
+      background-color: #3498db;
+      color: white;
+      font-weight: bold;
+    }
+    tr:nth-child(even) {
+      background-color: #f8f9fa;
+    }
+    tr:hover {
+      background-color: #e9ecef;
+    }
+    /* List styles */
+    ul, ol {
       margin: 10px 0;
+      padding-left: 25px;
+    }
+    li {
+      margin: 5px 0;
+    }
+    /* Blockquote */
+    blockquote {
+      border-left: 4px solid #3498db;
+      margin: 15px 0;
+      padding: 10px 20px;
+      background-color: #f8f9fa;
+      color: #555;
+    }
+    /* Answer highlight */
+    strong:has(+ br), p > strong:last-child {
+      background-color: #d4edda;
+      padding: 2px 8px;
+      border-radius: 3px;
+    }
+    /* MathJax specific */
+    .MathJax {
+      font-size: 1.1em !important;
+    }
+    mjx-container {
+      margin: 0 2px;
+    }
+    /* Horizontal rule */
+    hr {
+      border: none;
+      border-top: 2px solid #eee;
+      margin: 25px 0;
     }
   </style>
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
   <div class="disclaimer">
     <strong>⚠️ AVISO IMPORTANTE:</strong><br>
     ${DISCLAIMER_ES}
   </div>
-  ${content}
+  <div class="content">
+    ${content}
+  </div>
 </body>
 </html>`;
   }
@@ -411,7 +493,34 @@ class PdfGenerator {
 
     try {
       const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: "networkidle0" });
+
+      // Set content and wait for network to be idle
+      await page.setContent(html, {
+        waitUntil: "networkidle0",
+        timeout: 60000,
+      });
+
+      // Wait for MathJax to finish rendering
+      await page
+        .waitForFunction(
+          () => {
+            // Check if MathJax has finished processing
+            if (typeof MathJax !== "undefined" && MathJax.startup) {
+              return MathJax.startup.promise.then(() => true).catch(() => true);
+            }
+            return true;
+          },
+          { timeout: 30000 },
+        )
+        .catch(() => {
+          // If MathJax check fails, wait a bit and continue
+          return page.waitForTimeout(2000);
+        });
+
+      // Additional wait to ensure all rendering is complete
+      await page.evaluate(
+        () => new Promise((resolve) => setTimeout(resolve, 1500)),
+      );
 
       await page.pdf({
         path: outputPath,
@@ -423,6 +532,7 @@ class PdfGenerator {
           left: "2cm",
         },
         printBackground: true,
+        preferCSSPageSize: true,
       });
 
       return true;

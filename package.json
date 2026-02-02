@@ -23,7 +23,8 @@
   "dependencies": {
     "@google/genai": "^1.0.0",
     "axios": "^1.7.7",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "marked": "^15.0.0"
   },
   "optionalDependencies": {
     "puppeteer": "^24.0.0"
