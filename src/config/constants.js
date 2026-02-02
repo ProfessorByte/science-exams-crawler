@@ -24,9 +24,10 @@ export const YEARS = (() => {
 
 export const SEMESTERS = [1, 2];
 
-export const LOWER_ID_RESOURCE_LIMIT = 600;
+export const LOWER_ID_RESOURCE_LIMIT = 500;
 export const UPPER_ID_RESOURCE_LIMIT = 700;
-export const ID_RESOURCE_BUFFER = 45;
+export const ID_RESOURCE_UPPER_BUFFER = 12;
+export const ID_RESOURCE_LOWER_BUFFER = 12;
 
 export const MODES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 

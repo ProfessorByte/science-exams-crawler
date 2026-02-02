@@ -1,8 +1,10 @@
 import fs from "fs/promises";
 import {
+  LOWER_ID_RESOURCE_LIMIT,
   UPPER_ID_RESOURCE_LIMIT,
   VALID_URLS_FILE,
-  ID_RESOURCE_BUFFER,
+  ID_RESOURCE_UPPER_BUFFER,
+  ID_RESOURCE_LOWER_BUFFER,
 } from "../config/constants.js";
 import { Logger } from "../utils/logger.util.js";
 
@@ -43,30 +45,50 @@ export class StorageService {
     });
   }
 
-  static async getUpperIdResourceLimit(lowerLimit) {
+  static async getIdResourceLimits() {
     try {
       const validUrls = await this.loadValidUrls();
 
       if (validUrls.length === 0) {
         Logger.logInfo(
-          "No existing data. Using default upper limit:",
-          UPPER_ID_RESOURCE_LIMIT,
+          `No existing data. Using default limits: [${LOWER_ID_RESOURCE_LIMIT}, ${UPPER_ID_RESOURCE_LIMIT}]`,
         );
-        return UPPER_ID_RESOURCE_LIMIT;
+        return {
+          lower: LOWER_ID_RESOURCE_LIMIT,
+          upper: UPPER_ID_RESOURCE_LIMIT,
+        };
       }
 
-      const maxId = validUrls.reduce(
-        (acc, urlData) => (urlData.idResource > acc ? urlData.idResource : acc),
-        lowerLimit,
+      const { minId, maxId } = this.#calculateIdResourceRange(validUrls);
+
+      const lowerLimit = Math.max(
+        LOWER_ID_RESOURCE_LIMIT,
+        minId - ID_RESOURCE_LOWER_BUFFER,
+      );
+      const upperLimit = maxId + ID_RESOURCE_UPPER_BUFFER;
+
+      Logger.logInfo(
+        `Calculated ID resource limits: [${lowerLimit}, ${upperLimit}] (based on data range: [${minId}, ${maxId}])`,
       );
 
-      const upperLimit = maxId + ID_RESOURCE_BUFFER;
-      Logger.logInfo(`Setting upper ID resource limit to: ${upperLimit}`);
-      return upperLimit;
+      return { lower: lowerLimit, upper: upperLimit };
     } catch (error) {
-      Logger.logError("Error calculating upper limit", error);
-      return UPPER_ID_RESOURCE_LIMIT;
+      Logger.logError("Error calculating ID resource limits", error);
+      return {
+        lower: LOWER_ID_RESOURCE_LIMIT,
+        upper: UPPER_ID_RESOURCE_LIMIT,
+      };
     }
+  }
+
+  static #calculateIdResourceRange(validUrls) {
+    return validUrls.reduce(
+      (acc, urlData) => ({
+        minId: Math.min(acc.minId, urlData.idResource),
+        maxId: Math.max(acc.maxId, urlData.idResource),
+      }),
+      { minId: Infinity, maxId: -Infinity },
+    );
   }
 
   static createSlugSet(validUrls) {

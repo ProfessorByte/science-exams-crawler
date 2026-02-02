@@ -1,7 +1,6 @@
 import {
   YEARS,
   SEMESTERS,
-  LOWER_ID_RESOURCE_LIMIT,
   MODES,
   PATHWAYS,
   FORM_VERSIONS,
@@ -10,7 +9,7 @@ import { ExamResource } from "../models/ExamResource.js";
 import { Logger } from "../utils/logger.util.js";
 
 export class UrlGeneratorService {
-  static generateCombinations(upperIdResourceLimit, existingSlugs) {
+  static generateCombinations(idResourceLimits, existingSlugs) {
     const combinations = [];
     let totalPossible = 0;
     let skipped = 0;
@@ -18,8 +17,8 @@ export class UrlGeneratorService {
     for (const year of YEARS) {
       for (const semester of SEMESTERS) {
         for (
-          let idResource = LOWER_ID_RESOURCE_LIMIT;
-          idResource <= upperIdResourceLimit;
+          let idResource = idResourceLimits.lower;
+          idResource <= idResourceLimits.upper;
           idResource++
         ) {
           for (const mode of MODES) {
@@ -55,8 +54,8 @@ export class UrlGeneratorService {
     return combinations;
   }
 
-  static calculateTotalCombinations(upperIdResourceLimit) {
-    const idResourceCount = upperIdResourceLimit - LOWER_ID_RESOURCE_LIMIT + 1;
+  static calculateTotalCombinations(idResourceLimits) {
+    const idResourceCount = idResourceLimits.upper - idResourceLimits.lower + 1;
     return (
       YEARS.length *
       SEMESTERS.length *
