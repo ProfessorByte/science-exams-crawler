@@ -1,0 +1,567 @@
+import fs from "fs/promises";
+import path from "path";
+import { GoogleGenAI } from "@google/genai";
+import { config } from "dotenv";
+
+// Load environment variables from .env file
+config();
+
+// ============================================================================
+// Configuration Constants
+// ============================================================================
+
+const DOWNLOADS_DIR = "downloads";
+const MIN_FILE_SIZE = 1024;
+const MODEL_NAME = "gemini-3-flash-preview";
+const GENERATED_SOLUTION_PREFIX = "Solucionario_IA";
+const EXAM_FILE_PREFIX = "Preguntas";
+
+const DISCLAIMER_ES = `El presente documento ha sido elaborado mediante el uso de sistemas de inteligencia artificial; en consecuencia, su contenido podría presentar imprecisiones. Se exhorta al lector a realizar una verificación exhaustiva de la información suministrada, contrastándola con fuentes académicas fidedignas, a fin de garantizar su veracidad antes de considerarla definitiva.`;
+
+// ============================================================================
+// Prompt Builder
+// ============================================================================
+
+/**
+ * Builds the prompt for generating exam solutions in Spanish.
+ * @returns {string} The system prompt for the AI model.
+ */
+function buildSolutionPrompt() {
+  return `Eres un experto profesor de ciencias exactas (matemáticas, física, química) con amplia experiencia en la resolución de exámenes de admisión universitaria.
+
+Tu tarea es analizar el examen de admisión proporcionado y generar una solución detallada y completa para cada pregunta.
+
+## Instrucciones específicas:
+
+1. **Formato de salida**: Genera la solución en formato Markdown válido.
+
+2. **Estructura por pregunta**:
+   - Incluye el número de la pregunta como encabezado (ejemplo: "## Pregunta 1")
+   - Transcribe brevemente el enunciado de la pregunta
+   - Desarrolla el procedimiento paso a paso de manera clara y didáctica
+   - Explica cada paso con detalle, incluyendo las fórmulas y conceptos utilizados
+   - Muestra los cálculos intermedios cuando sea necesario
+   - Al final de cada pregunta, indica la respuesta correcta con la opción correspondiente en **negrita**. Por ejemplo: "**Respuesta: B) 42**"
+
+3. **Estilo de explicación**:
+   - Procede de manera secuencial hacia la respuesta final
+   - Utiliza un lenguaje académico pero accesible
+   - Si hay múltiples métodos de solución, menciona el más eficiente
+   - Incluye justificaciones para descartar las opciones incorrectas cuando sea relevante
+   - Utiliza notación matemática apropiada (puedes usar LaTeX inline con $ para ecuaciones)
+
+4. **Organización del documento**:
+   - Comienza con un título principal indicando el examen
+   - Agrupa las preguntas por sección si el examen tiene secciones identificables
+   - Mantén un formato consistente a lo largo de todo el documento
+
+5. **Idioma**: Toda la solución debe estar en español.
+
+Analiza el examen PDF adjunto y genera las soluciones completas siguiendo estas instrucciones.`;
+}
+
+// ============================================================================
+// File System Utilities
+// ============================================================================
+
+/**
+ * Checks if a file exists at the given path.
+ * @param {string} filePath - Path to check.
+ * @returns {Promise<boolean>} True if file exists.
+ */
+async function fileExists(filePath) {
+  try {
+    await fs.access(filePath);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Gets the size of a file in bytes.
+ * @param {string} filePath - Path to the file.
+ * @returns {Promise<number>} File size in bytes.
+ */
+async function getFileSize(filePath) {
+  try {
+    const stats = await fs.stat(filePath);
+    return stats.size;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Ensures a directory exists, creating it if necessary.
+ * @param {string} dirPath - Directory path.
+ */
+async function ensureDirectory(dirPath) {
+  try {
+    await fs.mkdir(dirPath, { recursive: true });
+  } catch (error) {
+    if (error.code !== "EEXIST") {
+      throw error;
+    }
+  }
+}
+
+// ============================================================================
+// Resource Analysis
+// ============================================================================
+
+/**
+ * Identifies resources that need AI-generated solutions.
+ * A resource needs a solution if:
+ * - The original solution has a 404 status code
+ * - OR the solution file doesn't exist locally
+ * - AND the exam file exists and is valid
+ * - AND no AI-generated solution already exists
+ * @param {Array} validUrls - Array of valid URL resources.
+ * @returns {Promise<Array>} Resources needing solutions.
+ */
+async function findResourcesNeedingSolutions(validUrls) {
+  const resourcesNeedingSolutions = [];
+
+  for (const resource of validUrls) {
+    const { slug, solutionStatusCode } = resource;
+
+    const examPath = path.join(
+      DOWNLOADS_DIR,
+      slug,
+      `${EXAM_FILE_PREFIX}_${slug}.pdf`,
+    );
+    const aiSolutionPath = path.join(
+      DOWNLOADS_DIR,
+      slug,
+      `${GENERATED_SOLUTION_PREFIX}_${slug}.pdf`,
+    );
+
+    // Check if exam exists and is valid
+    const examExists = await fileExists(examPath);
+    if (!examExists) continue;
+
+    const examSize = await getFileSize(examPath);
+    if (examSize < MIN_FILE_SIZE) continue;
+
+    // Check if AI solution already exists
+    const aiSolutionExists = await fileExists(aiSolutionPath);
+    if (aiSolutionExists) continue;
+
+    // Check if original solution is missing (404)
+    if (solutionStatusCode === 404) {
+      resourcesNeedingSolutions.push({
+        ...resource,
+        examPath,
+        aiSolutionPath,
+      });
+    }
+  }
+
+  return resourcesNeedingSolutions;
+}
+
+// ============================================================================
+// AI Solution Generator
+// ============================================================================
+
+/**
+ * Service class for generating solutions using Google's Gemini AI.
+ */
+class SolutionGenerator {
+  constructor(apiKey) {
+    if (!apiKey) {
+      throw new Error(
+        "GEMINI_API_KEY environment variable is required. " +
+          "Please set it before running this script.",
+      );
+    }
+    this.ai = new GoogleGenAI({ apiKey });
+    this.model = MODEL_NAME;
+  }
+
+  /**
+   * Generates a solution for an exam PDF.
+   * @param {string} examPath - Path to the exam PDF.
+   * @param {string} slug - Resource slug for identification.
+   * @returns {Promise<string>} Generated solution in Markdown format.
+   */
+  async generateSolution(examPath, slug) {
+    const pdfData = await fs.readFile(examPath);
+    const base64Pdf = pdfData.toString("base64");
+
+    const prompt = buildSolutionPrompt();
+
+    const contents = [
+      { text: prompt },
+      {
+        inlineData: {
+          mimeType: "application/pdf",
+          data: base64Pdf,
+        },
+      },
+    ];
+
+    const response = await this.ai.models.generateContent({
+      model: this.model,
+      contents: contents,
+    });
+
+    return response.text;
+  }
+}
+
+// ============================================================================
+// Markdown to PDF Converter
+// ============================================================================
+
+/**
+ * Converts Markdown content to PDF format.
+ * Uses a simple HTML-based approach for PDF generation.
+ */
+class MarkdownToPdfConverter {
+  /**
+   * Converts markdown to a styled HTML document.
+   * @param {string} markdown - Markdown content.
+   * @param {string} slug - Resource slug for the title.
+   * @returns {string} HTML document string.
+   */
+  convertToHtml(markdown, slug) {
+    // Basic markdown to HTML conversion
+    let html = markdown
+      // Headers
+      .replace(/^### (.*$)/gm, "<h3>$1</h3>")
+      .replace(/^## (.*$)/gm, "<h2>$1</h2>")
+      .replace(/^# (.*$)/gm, "<h1>$1</h1>")
+      // Bold
+      .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+      // Italic
+      .replace(/\*(.*?)\*/g, "<em>$1</em>")
+      // Code blocks
+      .replace(/```([\s\S]*?)```/g, "<pre><code>$1</code></pre>")
+      // Inline code
+      .replace(/`(.*?)`/g, "<code>$1</code>")
+      // Line breaks
+      .replace(/\n\n/g, "</p><p>")
+      .replace(/\n/g, "<br>");
+
+    // Wrap in paragraphs
+    html = `<p>${html}</p>`;
+
+    return this.wrapInHtmlDocument(html, slug);
+  }
+
+  /**
+   * Wraps content in a complete HTML document with styling.
+   * @param {string} content - HTML content.
+   * @param {string} slug - Resource slug for the title.
+   * @returns {string} Complete HTML document.
+   */
+  wrapInHtmlDocument(content, slug) {
+    return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Solucionario - ${slug}</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 2cm;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .disclaimer {
+      background-color: #fff3cd;
+      border: 1px solid #ffc107;
+      border-radius: 5px;
+      padding: 15px;
+      margin-bottom: 30px;
+      font-size: 0.9em;
+      color: #856404;
+    }
+    h1 {
+      color: #2c3e50;
+      border-bottom: 2px solid #3498db;
+      padding-bottom: 10px;
+    }
+    h2 {
+      color: #34495e;
+      margin-top: 30px;
+      border-left: 4px solid #3498db;
+      padding-left: 10px;
+    }
+    h3 {
+      color: #7f8c8d;
+    }
+    strong {
+      color: #27ae60;
+    }
+    code {
+      background-color: #f4f4f4;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-family: 'Consolas', monospace;
+    }
+    pre {
+      background-color: #f4f4f4;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+    }
+    pre code {
+      background: none;
+      padding: 0;
+    }
+    .answer {
+      background-color: #d4edda;
+      border: 1px solid #28a745;
+      border-radius: 5px;
+      padding: 10px;
+      margin: 10px 0;
+    }
+  </style>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <div class="disclaimer">
+    <strong>⚠️ AVISO IMPORTANTE:</strong><br>
+    ${DISCLAIMER_ES}
+  </div>
+  ${content}
+</body>
+</html>`;
+  }
+
+  /**
+   * Saves HTML content as a file (for PDF conversion via external tool).
+   * @param {string} html - HTML content.
+   * @param {string} outputPath - Output file path (will save .html).
+   */
+  async saveHtml(html, outputPath) {
+    const htmlPath = outputPath.replace(".pdf", ".html");
+    await fs.writeFile(htmlPath, html, "utf-8");
+    return htmlPath;
+  }
+
+  /**
+   * Saves the raw markdown content.
+   * @param {string} markdown - Markdown content.
+   * @param {string} outputPath - Output file path.
+   */
+  async saveMarkdown(markdown, outputPath) {
+    const mdPath = outputPath.replace(".pdf", ".md");
+    const contentWithDisclaimer = `> **⚠️ AVISO IMPORTANTE:**\n> ${DISCLAIMER_ES}\n\n---\n\n${markdown}`;
+    await fs.writeFile(mdPath, contentWithDisclaimer, "utf-8");
+    return mdPath;
+  }
+}
+
+// ============================================================================
+// PDF Generator using Puppeteer (if available) or fallback
+// ============================================================================
+
+/**
+ * Generates PDF from HTML content.
+ * Attempts to use Puppeteer if available, otherwise saves HTML.
+ */
+class PdfGenerator {
+  constructor() {
+    this.puppeteerAvailable = false;
+    this.puppeteer = null;
+  }
+
+  /**
+   * Initializes Puppeteer if available.
+   */
+  async initialize() {
+    try {
+      this.puppeteer = await import("puppeteer");
+      this.puppeteerAvailable = true;
+      console.log("   📦 Puppeteer disponible - se generarán archivos PDF");
+    } catch {
+      console.log(
+        "   ⚠️  Puppeteer no disponible - se generarán archivos HTML y MD",
+      );
+      console.log("   💡 Para generar PDFs, instala: pnpm add puppeteer");
+    }
+  }
+
+  /**
+   * Generates PDF from HTML content.
+   * @param {string} html - HTML content.
+   * @param {string} outputPath - Output PDF path.
+   * @returns {Promise<boolean>} True if PDF was generated.
+   */
+  async generatePdf(html, outputPath) {
+    if (!this.puppeteerAvailable) {
+      return false;
+    }
+
+    const browser = await this.puppeteer.default.launch({
+      headless: "new",
+    });
+
+    try {
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: "networkidle0" });
+
+      await page.pdf({
+        path: outputPath,
+        format: "A4",
+        margin: {
+          top: "2cm",
+          right: "2cm",
+          bottom: "2cm",
+          left: "2cm",
+        },
+        printBackground: true,
+      });
+
+      return true;
+    } finally {
+      await browser.close();
+    }
+  }
+}
+
+// ============================================================================
+// Main Orchestrator
+// ============================================================================
+
+/**
+ * Main function to orchestrate the solution generation process.
+ */
+async function main() {
+  console.log("\n" + "=".repeat(60));
+  console.log("🤖 GENERADOR DE SOLUCIONARIOS CON IA");
+  console.log("=".repeat(60) + "\n");
+
+  // Load valid URLs
+  let validUrls;
+  try {
+    const data = await fs.readFile("validUrls.json", "utf-8");
+    validUrls = JSON.parse(data);
+    console.log(`📋 Total de recursos en validUrls.json: ${validUrls.length}`);
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      console.error(
+        "❌ validUrls.json no encontrado. Ejecuta el crawler primero.",
+      );
+      process.exit(1);
+    }
+    throw error;
+  }
+
+  // Find resources needing solutions
+  console.log("\n🔍 Analizando exámenes sin solucionario...\n");
+  const resourcesNeedingSolutions =
+    await findResourcesNeedingSolutions(validUrls);
+
+  if (resourcesNeedingSolutions.length === 0) {
+    console.log(
+      "✅ Todos los exámenes ya tienen solucionario o generación IA previa.",
+    );
+    console.log("\n" + "=".repeat(60) + "\n");
+    return;
+  }
+
+  console.log(
+    `📝 Exámenes sin solucionario encontrados: ${resourcesNeedingSolutions.length}\n`,
+  );
+
+  // List resources
+  console.log("   Recursos a procesar:");
+  resourcesNeedingSolutions.forEach(({ slug }) => {
+    console.log(`   • ${slug}`);
+  });
+  console.log();
+
+  // Check API key
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    console.error(
+      "❌ Error: Variable de entorno GEMINI_API_KEY no configurada.",
+    );
+    console.log("   Configura la variable antes de ejecutar:");
+    console.log("   Windows: set GEMINI_API_KEY=tu_api_key");
+    console.log("   Linux/Mac: export GEMINI_API_KEY=tu_api_key");
+    process.exit(1);
+  }
+
+  // Initialize services
+  const generator = new SolutionGenerator(apiKey);
+  const converter = new MarkdownToPdfConverter();
+  const pdfGen = new PdfGenerator();
+  await pdfGen.initialize();
+
+  // Process each resource
+  let successCount = 0;
+  let errorCount = 0;
+
+  for (let i = 0; i < resourcesNeedingSolutions.length; i++) {
+    const resource = resourcesNeedingSolutions[i];
+    const { slug, examPath, aiSolutionPath } = resource;
+
+    console.log(
+      `\n[${i + 1}/${resourcesNeedingSolutions.length}] 📄 Procesando: ${slug}`,
+    );
+
+    try {
+      // Generate solution with AI
+      console.log("   🧠 Generando solución con Gemini AI...");
+      const markdown = await generator.generateSolution(examPath, slug);
+
+      // Convert to HTML
+      const html = converter.convertToHtml(markdown, slug);
+
+      // Save markdown
+      const mdPath = await converter.saveMarkdown(markdown, aiSolutionPath);
+      console.log(`   📝 Markdown guardado: ${path.basename(mdPath)}`);
+
+      // Try to generate PDF
+      const pdfGenerated = await pdfGen.generatePdf(html, aiSolutionPath);
+
+      if (pdfGenerated) {
+        console.log(`   ✅ PDF generado: ${path.basename(aiSolutionPath)}`);
+      } else {
+        // Save HTML as fallback
+        const htmlPath = await converter.saveHtml(html, aiSolutionPath);
+        console.log(`   📄 HTML guardado: ${path.basename(htmlPath)}`);
+      }
+
+      successCount++;
+    } catch (error) {
+      console.error(`   ❌ Error: ${error.message}`);
+      errorCount++;
+    }
+
+    // Add delay to respect API rate limits
+    if (i < resourcesNeedingSolutions.length - 1) {
+      console.log("   ⏳ Esperando antes del siguiente procesamiento...");
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+  }
+
+  // Summary
+  console.log("\n" + "=".repeat(60));
+  console.log("📊 RESUMEN DE GENERACIÓN");
+  console.log("=".repeat(60));
+  console.log(`   ✅ Exitosos: ${successCount}`);
+  console.log(`   ❌ Errores: ${errorCount}`);
+  console.log(`   📁 Total procesados: ${resourcesNeedingSolutions.length}`);
+  console.log("=".repeat(60) + "\n");
+}
+
+// Execute
+main().catch((error) => {
+  console.error("❌ Error fatal:", error.message);
+  process.exit(1);
+});
