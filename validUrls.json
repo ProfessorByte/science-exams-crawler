@@ -2351,5 +2351,18 @@
     "formVersion": 1,
     "examStatusCode": 200,
     "solutionStatusCode": 200
+  },
+  {
+    "slug": "2026-1-682-1-6-1",
+    "examUrl": "http://sagaa.fcyt.umss.edu.bo/adm_academica/archivos/examenes/2026-1-682/1/6-1.pdf",
+    "solutionUrl": "http://sagaa.fcyt.umss.edu.bo/adm_academica/archivos/solucionario/2026-1-682/1/6-1/0.pdf",
+    "year": 2026,
+    "semester": 1,
+    "idResource": 682,
+    "mode": 1,
+    "pathway": 6,
+    "formVersion": 1,
+    "examStatusCode": 200,
+    "solutionStatusCode": 200
   }
 ]
