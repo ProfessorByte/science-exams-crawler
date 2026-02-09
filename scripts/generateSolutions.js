@@ -42,6 +42,8 @@ Tu tarea es analizar el examen de admisión proporcionado y generar una solució
    - Si hay múltiples métodos de solución, menciona el más eficiente
    - Incluye justificaciones para descartar las opciones incorrectas cuando sea relevante
    - Utiliza notación matemática apropiada (puedes usar LaTeX inline con $ para ecuaciones)
+   - Si la pregunta tiene gráficos o tablas, describe cómo se interpretarían y cómo se usarían para resolver la pregunta
+   - Utiliza notación LaTeX apropiada, válida y correcta, evita errores como "Missing superscript or subscript argument" o "Undefined control sequence". Asegúrate de que todas las fórmulas estén correctamente formateadas y sean legibles.
 
 4. **Organización del documento**:
    - Comienza con un título principal indicando el examen
