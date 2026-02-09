@@ -50,7 +50,7 @@ Tu tarea es analizar el examen de admisión proporcionado y generar una solució
 
 5. **Idioma**: Toda la solución debe estar en español.
 
-Analiza el examen PDF adjunto y genera las soluciones completas siguiendo estas instrucciones.`;
+Analiza el examen PDF adjunto y genera las soluciones completas siguiendo estas instrucciones y usa las herramientas que tienes disponibles cuando sea necesario.`;
 }
 
 async function fileExists(filePath) {
