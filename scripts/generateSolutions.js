@@ -29,7 +29,7 @@ Tu tarea es analizar el examen de admisión proporcionado y generar una solució
 1. **Formato de salida**: Genera la solución en formato Markdown válido.
 
 2. **Estructura por pregunta**:
-   - Incluye el número de la pregunta como encabezado (ejemplo: "## Pregunta 1")
+   - Incluye el número de la pregunta como encabezado (ejemplo: "Pregunta A1")
    - Transcribe brevemente el enunciado de la pregunta
    - Desarrolla el procedimiento paso a paso de manera clara y didáctica
    - Explica cada paso con detalle, incluyendo las fórmulas y conceptos utilizados
