@@ -14,7 +14,7 @@ marked.setOptions({
 const DOWNLOADS_DIR = "downloads";
 const MIN_FILE_SIZE = 1024;
 const MODEL_NAME = process.env.MODEL_NAME || "gemini-3-flash-preview";
-const GENERATED_SOLUTION_PREFIX = "Solucionario_IA";
+const GENERATED_SOLUTION_PREFIX = "Respuestas";
 const EXAM_FILE_PREFIX = "Preguntas";
 
 const DISCLAIMER_ES = `El presente documento ha sido elaborado mediante el uso de sistemas de inteligencia artificial. Aunque se han implementado medidas para garantizar la precisión y calidad de las soluciones proporcionadas, es posible que existan errores o inexactitudes. Se recomienda a los usuarios revisar críticamente el contenido y utilizarlo como una guía complementaria en su proceso de estudio.`;
