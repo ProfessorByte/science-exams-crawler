@@ -43,7 +43,7 @@ Tu tarea es analizar el examen de admisión proporcionado y generar una solució
    - Incluye justificaciones para descartar las opciones incorrectas cuando sea relevante
    - Utiliza notación matemática apropiada (puedes usar LaTeX inline con $ para ecuaciones)
    - Si la pregunta tiene gráficos o tablas, describe cómo se interpretarían y cómo se usarían para resolver la pregunta
-   - Utiliza notación LaTeX apropiada, válida y correcta, evita errores como "Missing superscript or subscript argument" o "Undefined control sequence". Asegúrate de que todas las fórmulas estén correctamente formateadas y sean legibles.
+   - Utiliza notación tanto Markdown como LaTeX apropiada, válida y correcta.
 
 4. **Organización del documento**:
    - Comienza con un título principal indicando el examen
@@ -184,10 +184,61 @@ class SolutionGenerator {
   }
 }
 
+function protectMathExpressions(markdown) {
+  const mathExpressions = [];
+  let placeholderIndex = 0;
+
+  function replacer(match) {
+    const placeholder = `%%MATH_EXPR_${placeholderIndex}%%`;
+    mathExpressions.push({ placeholder, original: match });
+    placeholderIndex++;
+    return placeholder;
+  }
+
+  const codeBlockMap = [];
+  let processed = markdown.replace(/(```[\s\S]*?```|`[^`\n]+`)/g, (match) => {
+    const codePlaceholder = `%%CODE_BLOCK_${codeBlockMap.length}%%`;
+    codeBlockMap.push({ codePlaceholder, code: match });
+    return codePlaceholder;
+  });
+
+  processed = processed.replace(/\$\$[\s\S]+?\$\$/g, replacer);
+
+  processed = processed.replace(
+    /\$(?!\$)((?:[^$\\\n]|\\.)+?)\$(?!\$)/g,
+    replacer,
+  );
+
+  for (const { codePlaceholder, code } of codeBlockMap) {
+    processed = processed.replace(codePlaceholder, code);
+  }
+
+  return { processed, mathExpressions };
+}
+
+function restoreMathExpressions(html, mathExpressions) {
+  let result = html;
+  for (const { placeholder, original } of mathExpressions) {
+    const isDisplay = original.startsWith("$$");
+    const delim = isDisplay ? "$$" : "$";
+    const inner = original.slice(delim.length, original.length - delim.length);
+
+    const safeInner = inner
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+
+    result = result.replace(placeholder, `${delim}${safeInner}${delim}`);
+  }
+  return result;
+}
+
 class MarkdownToPdfConverter {
   convertToHtml(markdown, slug) {
-    const html = marked.parse(markdown);
-    return this.wrapInHtmlDocument(html, slug);
+    const { processed, mathExpressions } = protectMathExpressions(markdown);
+    const html = marked.parse(processed);
+    const restoredHtml = restoreMathExpressions(html, mathExpressions);
+    return this.wrapInHtmlDocument(restoredHtml, slug);
   }
 
   wrapInHtmlDocument(content, slug) {
