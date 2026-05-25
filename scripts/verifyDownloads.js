@@ -3,6 +3,31 @@ import path from "path";
 
 const DOWNLOADS_DIR = "downloads";
 const MIN_FILE_SIZE = 1024; // 1KB
+const ORIGINAL_SOLUTION_PREFIX = "Respuestas";
+const AI_SOLUTION_PREFIX = "Solucionario_IA";
+
+async function findSolutionFile(slug) {
+  const originalPath = path.join(
+    DOWNLOADS_DIR,
+    slug,
+    `${ORIGINAL_SOLUTION_PREFIX}_${slug}.pdf`,
+  );
+  const aiPath = path.join(
+    DOWNLOADS_DIR,
+    slug,
+    `${AI_SOLUTION_PREFIX}_${slug}.pdf`,
+  );
+
+  if (await fileExists(originalPath)) {
+    return { exists: true, path: originalPath, type: "original" };
+  }
+
+  if (await fileExists(aiPath)) {
+    return { exists: true, path: aiPath, type: "ai-generated" };
+  }
+
+  return { exists: false, path: null, type: null };
+}
 
 async function verifyDownloads() {
   try {
@@ -17,6 +42,7 @@ async function verifyDownloads() {
 
     const results = {
       complete: 0,
+      completeWithAI: 0,
       incomplete: 0,
       missing: 0,
       corrupted: 0,
@@ -27,14 +53,10 @@ async function verifyDownloads() {
     for (const resource of validUrls) {
       const { slug } = resource;
       const examPath = path.join(DOWNLOADS_DIR, slug, `Preguntas_${slug}.pdf`);
-      const solutionPath = path.join(
-        DOWNLOADS_DIR,
-        slug,
-        `Respuestas_${slug}.pdf`
-      );
+      const solution = await findSolutionFile(slug);
 
       const examExists = await fileExists(examPath);
-      const solutionExists = await fileExists(solutionPath);
+      const solutionExists = solution.exists;
 
       if (!examExists && !solutionExists) {
         results.missing++;
@@ -47,7 +69,7 @@ async function verifyDownloads() {
         issues.push({ slug, issue: "Solution file missing" });
       } else {
         const examSize = await getFileSize(examPath);
-        const solutionSize = await getFileSize(solutionPath);
+        const solutionSize = await getFileSize(solution.path);
 
         if (examSize < MIN_FILE_SIZE || solutionSize < MIN_FILE_SIZE) {
           results.corrupted++;
@@ -56,6 +78,9 @@ async function verifyDownloads() {
             issue: `File too small (exam: ${examSize}B, solution: ${solutionSize}B)`,
           });
         } else {
+          if (solution.type === "ai-generated") {
+            results.completeWithAI++;
+          }
           results.complete++;
         }
       }
@@ -63,6 +88,11 @@ async function verifyDownloads() {
 
     console.log("📊 Results:");
     console.log(`   ✅ Complete: ${results.complete}`);
+    if (results.completeWithAI > 0) {
+      console.log(
+        `      (${results.completeWithAI} with AI-generated solutions)`,
+      );
+    }
     console.log(`   ⚠️  Incomplete: ${results.incomplete}`);
     console.log(`   ❌ Missing: ${results.missing}`);
     console.log(`   🔴 Corrupted: ${results.corrupted}`);
