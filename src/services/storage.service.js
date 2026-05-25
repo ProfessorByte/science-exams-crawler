@@ -59,16 +59,16 @@ export class StorageService {
         };
       }
 
-      const { minId, maxId } = this.#calculateIdResourceRange(validUrls);
+      const { maxId } = this.#calculateIdResourceRange(validUrls);
 
       const lowerLimit = Math.max(
         LOWER_ID_RESOURCE_LIMIT,
-        minId - ID_RESOURCE_LOWER_BUFFER,
+        maxId - ID_RESOURCE_LOWER_BUFFER,
       );
       const upperLimit = maxId + ID_RESOURCE_UPPER_BUFFER;
 
       Logger.logInfo(
-        `Calculated ID resource limits: [${lowerLimit}, ${upperLimit}] (based on data range: [${minId}, ${maxId}])`,
+        `Calculated ID resource limits: [${lowerLimit}, ${upperLimit}] (based on max known ID: ${maxId})`,
       );
 
       return { lower: lowerLimit, upper: upperLimit };
