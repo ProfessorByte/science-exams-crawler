@@ -2,10 +2,6 @@ export const MAX_RETRIES = 3;
 export const BATCH_SIZE = 64;
 export const REQUEST_TIMEOUT = 0; // 0 = no timeout
 
-export const BASE_URL = "http://sagaa.fcyt.umss.edu.bo/adm_academica/archivos";
-export const EXAM_PATH = "examenes";
-export const SOLUTION_PATH = "solucionario";
-
 // Range Limits
 export const YEARS = (() => {
   const now = new Date();
