@@ -10,7 +10,8 @@
     "stats": "node scripts/stats.js",
     "download": "node src/downloadIndex.js",
     "verify": "node scripts/verifyDownloads.js",
-    "generate-solutions": "node scripts/generateSolutions.js"
+    "generate-solutions": "node scripts/generateSolutions.js",
+    "generate-slugs": "node scripts/generateSlugs.js"
   },
   "keywords": [
     "crawler",
